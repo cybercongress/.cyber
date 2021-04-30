@@ -6,6 +6,14 @@
 
 We have to design complete app which will be lovable and simple.
 
+- [ ] Refresh game page (!)
+   Refresh the game page for new conditions
+- [ ] Comments in Kepler 
+   Wrote a comment, the wrong chain was chosen in the Kepler. I pressed send a tranzaction, everything hung up and the text disappeared. It turned out that comments do not work at all through Kepler
+- [ ] Ledger network error
+   I tried to send a transaction through the ledger - there was a network error. It was possible to send only the second time.
+- [ ] The site should remember the position
+    When you scroll down and follow the link and then come back. The site does not remember the last position and you have to scroll down again and look for the place where you last clicked
 - [ ] Cybernomics: Fix GOL Supply, Add price from Uniswap. Remove EUL
 - [ ] Tests
   - [ ] connectability (поключение, разрешение)
