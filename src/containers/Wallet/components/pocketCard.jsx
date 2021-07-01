@@ -14,6 +14,7 @@ const deleteIcon = require('../../../image/trash-outline.svg');
 const imgEth = require('../../../image/Ethereum_logo_2014.svg');
 const imgCyber = require('../../../image/blue-circle.png');
 const imgCosmos = require('../../../image/cosmos-2.svg');
+const imgCyberSigner = require('../../../image/wallet-outline.svg');
 
 const imgData = {
   ledger: imgLedger,
@@ -23,6 +24,7 @@ const imgData = {
   cyber: imgCyber,
   cosmos: imgCosmos,
   eth: imgEth,
+  cyberSigner: imgCyberSigner,
 };
 
 export const FormatNumber = ({

@@ -38,6 +38,7 @@ import ForceGraph from './containers/forceGraph/forceGraph';
 import ForceQuitter from './containers/forceGraph/forceQuitter';
 import PortPages from './containers/port';
 import TestKeplr from './containers/testKeplre';
+import AppSign from './containers/signer/app';
 
 export const history = createBrowserHistory({});
 
@@ -68,6 +69,7 @@ function AppRouter({
   return (
     <Router history={history}>
       <Route path="/" component={App} />
+      <AppSign />
       <Switch>
         <Route path="/" exact component={Home} />
         <Route exact path="/search/:query" component={SearchResults} />

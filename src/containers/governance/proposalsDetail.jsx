@@ -28,7 +28,7 @@ import {
   getTableVoters,
   getTallyingProposals,
 } from '../../utils/governance';
-import ActionBarDetail from './actionBarDatail';
+import ActionBarContainer from './actionBarDetailsContainer';
 
 import { formatNumber } from '../../utils/utils';
 
@@ -437,7 +437,7 @@ class ProposalsDetail extends React.Component {
         {defaultAccount.account !== null &&
         defaultAccount.account.cyber &&
         defaultAccount.account.cyber.keys !== 'read-only' ? (
-          <ActionBarDetail
+          <ActionBarContainer
             id={id}
             period={period}
             minDeposit={minDeposit}

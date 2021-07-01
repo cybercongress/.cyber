@@ -1,0 +1,18 @@
+.signer-container {
+    width: 350px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 5px;
+    box-shadow: 0 0 7px 1px #3ab793;
+    position: fixed;
+    background-color: #000;
+    top: 50%;
+    right: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    margin-right: -50%;
+    padding: 10px;
+}

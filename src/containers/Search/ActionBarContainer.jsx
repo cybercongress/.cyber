@@ -29,11 +29,18 @@ import {
 
 import { LEDGER, CYBER, PATTERN_IPFS_HASH } from '../../utils/config';
 import { trimString } from '../../utils/utils';
-import { AppContext } from '../../context';
 
 const imgKeplr = require('../../image/keplr-icon.svg');
 const imgLedger = require('../../image/ledger.svg');
 const imgCyber = require('../../image/blue-circle.png');
+const imgCyberSigner = require('../../image/wallet-outline.svg');
+
+const imgData = {
+  ledger: imgLedger,
+  keplr: imgKeplr,
+  cyber: imgCyber,
+  cyberSigner: imgCyberSigner,
+};
 
 const {
   MEMO,
@@ -56,8 +63,9 @@ const ADD_ADDRESS = 11;
 const LEDGER_TX_ACOUNT_INFO = 12;
 const STAGE_IPFS_HASH = 3.1;
 const STAGE_KEPLR_APPROVE = 3.2;
+const STAGE_CHECK_TYPE_SIGNER = 8.1;
 
-class ActionBarContainer extends Component {
+class InnerActionBarContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -110,7 +118,9 @@ class ActionBarContainer extends Component {
       if (
         address !== null &&
         addressInfo !== null &&
+        toCid &&
         toCid !== null &&
+        fromCid &&
         fromCid !== null
       ) {
         this.stageReady();
@@ -118,8 +128,8 @@ class ActionBarContainer extends Component {
     }
 
     if (stage === STAGE_IPFS_HASH) {
-      if (toCid !== null && fromCid !== null) {
-        this.generateTx();
+      if (toCid && toCid !== null && fromCid && fromCid !== null) {
+        this.checkTypeSigner();
       }
     }
     if (prevProps.defaultAccount.name !== defaultAccount.name) {
@@ -272,8 +282,24 @@ class ActionBarContainer extends Component {
     });
   };
 
+  checkTypeSigner = () => {
+    const { addressLocalStor } = this.state;
+
+    this.setState({
+      stage: STAGE_CHECK_TYPE_SIGNER,
+    });
+
+    if (addressLocalStor.keys === 'keplr') {
+      this.generateTx();
+    }
+    if (addressLocalStor.keys === 'cyberSigner') {
+      this.sendTxSigner();
+    }
+  };
+
   generateTx = async () => {
-    const { keplr } = this.context;
+    const { valueAppContext } = this.props;
+    const { keplr } = valueAppContext;
     const { fromCid, toCid, addressLocalStor } = this.state;
 
     this.setState({
@@ -283,7 +309,7 @@ class ActionBarContainer extends Component {
       const chainId = CYBER.CHAIN_ID;
       await window.keplr.enable(chainId);
       const { address } = await keplr.getAccount();
-      console.log('address', address)
+      console.log('address', address);
       if (addressLocalStor !== null && addressLocalStor.address === address) {
         const msgs = [];
         msgs.push({
@@ -497,6 +523,48 @@ class ActionBarContainer extends Component {
     });
   };
 
+  updateCallbackFnc = (result) => {
+    const { valueAppContextSigner } = this.props;
+    const { updateCallbackSigner } = valueAppContextSigner;
+
+    const hash = result.transactionHash;
+    updateCallbackSigner(null);
+    console.log('hash :>> ', hash);
+    this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+    this.timeOut = setTimeout(this.confirmTx, 1500);
+  };
+
+  sendTxSigner = async () => {
+    const { valueAppContextSigner } = this.props;
+    const { fromCid, toCid, addressLocalStor } = this.state;
+    const {
+      cyberSigner,
+      updateValueTxs,
+      updateCallbackSigner,
+    } = valueAppContextSigner;
+    if (cyberSigner !== null) {
+      const [{ address }] = await cyberSigner.getAccounts();
+      const msgs = [];
+      msgs.push({
+        type: 'cyber/Link',
+        value: {
+          address,
+          links: [
+            {
+              from: fromCid,
+              to: toCid,
+            },
+          ],
+        },
+      });
+      updateCallbackSigner(this.updateCallbackFnc);
+      updateValueTxs(msgs);
+      this.setState({
+        stage: STAGE_KEPLR_APPROVE,
+      });
+    }
+  };
+
   onClickBtnRank = async () => {
     const { addressLocalStor } = this.state;
     const { rankLink } = this.props;
@@ -521,6 +589,9 @@ class ActionBarContainer extends Component {
     if (addressLocalStor.keys === 'keplr') {
       this.onClickInitKeplr();
     }
+    if (addressLocalStor.keys === 'cyberSigner') {
+      this.onClickInitKeplr();
+    }
   };
 
   render() {
@@ -541,7 +612,7 @@ class ActionBarContainer extends Component {
       addressLocalStor,
     } = this.state;
 
-    const { textBtn, placeholder, rankLink } = this.props;
+    const { textBtn, placeholder, rankLink, node } = this.props;
 
     if (stage === STAGE_INIT && addressLocalStor === null) {
       return (
@@ -590,7 +661,7 @@ class ActionBarContainer extends Component {
                 </Pane>
               }
               onClick={() => this.onClickBtnRank()}
-              img={keys === 'ledger' ? imgLedger : imgKeplr}
+              img={imgData[keys]}
             />
           </ActionBarContentText>
         </ActionBar>
@@ -613,6 +684,7 @@ class ActionBarContainer extends Component {
           onClickClear={this.onClickClear}
           file={file}
           placeholder={placeholder}
+          node={node}
         />
       );
     }
@@ -655,6 +727,16 @@ class ActionBarContainer extends Component {
         <ActionBar>
           <ActionBarContentText>
             transaction generation <Dots big />
+          </ActionBarContentText>
+        </ActionBar>
+      );
+    }
+
+    if (stage === STAGE_CHECK_TYPE_SIGNER) {
+      return (
+        <ActionBar>
+          <ActionBarContentText>
+            <Dots big />
           </ActionBarContentText>
         </ActionBar>
       );
@@ -705,6 +787,7 @@ const mapStateToProps = (store) => {
   };
 };
 
-ActionBarContainer.contextType = AppContext;
+// ActionBarContainer.contextType = AppContext;
+// ActionBarContainer.contextType = AppContextSigner;
 
-export default connect(mapStateToProps)(ActionBarContainer);
+export default connect(mapStateToProps)(InnerActionBarContainer);

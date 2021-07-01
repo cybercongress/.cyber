@@ -31,6 +31,9 @@ const MsgType = ({ type }) => {
     case 'cyberd/Link':
       return <ContainerTitle img={link}>Link</ContainerTitle>;
 
+    case 'cyber/Link':
+      return <ContainerTitle img={link}>Link</ContainerTitle>;
+
     // bank
     case 'cosmos-sdk/MsgSend':
       return <ContainerTitle img={bank}>Send</ContainerTitle>;
@@ -84,7 +87,7 @@ const MsgType = ({ type }) => {
       return 'IBC Receive';
 
     default:
-      return { type };
+      return <Pane>{type}</Pane>;
   }
 };
 

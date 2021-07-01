@@ -26,7 +26,7 @@ import Heroes from './heroes';
 import Unbondings from './unbondings';
 import { fromBech32, formatNumber, asyncForEach } from '../../utils/utils';
 import { Loading, Copy, ContainerCard, Card, Dots } from '../../components';
-import ActionBarContainer from './actionBar';
+import ActionBarContainer from './ActionBarContainer';
 import GetTxs from './txs';
 import Main from './main';
 import GetMentions from './mentions';

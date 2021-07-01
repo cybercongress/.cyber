@@ -16,7 +16,7 @@ import {
   LinkWindow,
   Rank,
 } from '../../components';
-import ActionBarContainer from './ActionBarContainer';
+import ActionBarContainer from './ActionBar';
 import {
   PATTERN,
   PATTERN_CYBER,

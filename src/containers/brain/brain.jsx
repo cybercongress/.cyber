@@ -15,7 +15,7 @@ import { TabBtn } from '../../components';
 
 import { CYBER, TAKEOFF } from '../../utils/config';
 
-import ActionBarContainer from './actionBarContainer';
+import ActionBarContainer from '../Search/ActionBar';
 import {
   GovernmentTab,
   MainTab,
@@ -301,7 +301,11 @@ function Brain({ node, mobile, defaultAccount }) {
         addressActive !== null &&
         selected !== 'port' &&
         (addressActive.keys !== 'read-only' ? (
-          <ActionBarContainer addressPocket={addressActive} />
+          <ActionBarContainer
+            placeholder="What's happening?"
+            textBtn="Tweet"
+            keywordHash="tweet"
+          />
         ) : (
           <ActionBar>
             <Pane fontSize="18px">

@@ -30,8 +30,6 @@ import {
   getPin,
 } from '../../utils/search/utils';
 
-import { AppContext } from '../../context';
-
 const { DIVISOR_CYBER_G } = CYBER;
 
 const {
@@ -61,7 +59,7 @@ const groupLink = (linkArr) => {
   return link;
 };
 
-class ActionBarContainer extends Component {
+class InnerActionBarContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -200,76 +198,14 @@ class ActionBarContainer extends Component {
   };
 
   generateTxSendKplr = async () => {
-    const { contentHash, toSendAddres, toSend } = this.state;
-    const { keplr } = this.context;
-    const { type, addressSend, node, follow, tweets } = this.props;
-    const amount = parseFloat(toSend) * DIVISOR_CYBER_G;
+    const { valueAppContext } = this.props;
+    const { keplr } = valueAppContext;
 
     if (keplr !== null) {
       await window.keplr.enable(CYBER.CHAIN_ID);
       const { address } = await keplr.getAccount();
-
-      const msg = [];
-      if (type === 'heroes') {
-        if (address === addressSend) {
-          const dataTotalRewards = await getTotalRewards(address);
-          if (dataTotalRewards !== null && dataTotalRewards.rewards) {
-            const { rewards } = dataTotalRewards;
-            Object.keys(rewards).forEach((key) => {
-              if (rewards[key].reward !== null) {
-                const tempMsg = {
-                  type: 'cosmos-sdk/MsgWithdrawDelegationReward',
-                  value: {
-                    delegator_address: address,
-                    validator_address: rewards[key].validator_address,
-                  },
-                };
-                msg.push(tempMsg);
-              }
-            });
-          }
-        }
-      } else if (type === 'tweets' && follow) {
-        const fromCid = await getPin(node, 'follow');
-        const toCid = await getPin(node, addressSend);
-        msg.push({
-          type: 'cyber/Link',
-          value: {
-            address,
-            links: [
-              {
-                from: fromCid,
-                to: toCid,
-              },
-            ],
-          },
-        });
-      } else if (type === 'tweets' && tweets) {
-        const fromCid = await getPin(node, 'tweet');
-        const toCid = await this.calculationIpfsTo(contentHash);
-        msg.push({
-          type: 'cyber/Link',
-          value: {
-            address,
-            links: [
-              {
-                from: fromCid,
-                to: toCid,
-              },
-            ],
-          },
-        });
-      } else {
-        msg.push({
-          type: 'cosmos-sdk/MsgSend',
-          value: {
-            amount: coins(amount, CYBER.DENOM_CYBER),
-            from_address: address,
-            to_address: toSendAddres,
-          },
-        });
-      }
-      console.log(`msg`, msg)
+      const msg = await this.getTxs(address);
+      console.log(`msg`, msg);
       if (msg.length > 0) {
         const fee = {
           amount: coins(0, 'uatom'),
@@ -283,6 +219,74 @@ class ActionBarContainer extends Component {
         this.timeOut = setTimeout(this.confirmTx, 1500);
       }
     }
+  };
+
+  getTxs = async (address) => {
+    const { type, addressSend, node, follow, tweets } = this.props;
+    const { contentHash, toSendAddres, toSend } = this.state;
+    const amount = parseFloat(toSend) * DIVISOR_CYBER_G;
+
+    const msg = [];
+    if (type === 'heroes') {
+      if (address === addressSend) {
+        const dataTotalRewards = await getTotalRewards(address);
+        if (dataTotalRewards !== null && dataTotalRewards.rewards) {
+          const { rewards } = dataTotalRewards;
+          Object.keys(rewards).forEach((key) => {
+            if (rewards[key].reward !== null) {
+              const tempMsg = {
+                type: 'cosmos-sdk/MsgWithdrawDelegationReward',
+                value: {
+                  delegator_address: address,
+                  validator_address: rewards[key].validator_address,
+                },
+              };
+              msg.push(tempMsg);
+            }
+          });
+        }
+      }
+    } else if (type === 'tweets' && follow) {
+      const fromCid = await getPin(node, 'follow');
+      const toCid = await getPin(node, addressSend);
+      msg.push({
+        type: 'cyber/Link',
+        value: {
+          address,
+          links: [
+            {
+              from: fromCid,
+              to: toCid,
+            },
+          ],
+        },
+      });
+    } else if (type === 'tweets' && tweets) {
+      const fromCid = await getPin(node, 'tweet');
+      const toCid = await this.calculationIpfsTo(contentHash);
+      msg.push({
+        type: 'cyber/Link',
+        value: {
+          address,
+          links: [
+            {
+              from: fromCid,
+              to: toCid,
+            },
+          ],
+        },
+      });
+    } else {
+      msg.push({
+        type: 'cosmos-sdk/MsgSend',
+        value: {
+          amount: coins(amount, CYBER.DENOM_CYBER),
+          from_address: address,
+          to_address: toSendAddres,
+        },
+      });
+    }
+    return msg;
   };
 
   getTxType = async (type, txContext) => {
@@ -449,6 +453,36 @@ class ActionBarContainer extends Component {
     this.timeOut = setTimeout(this.confirmTx, 1500);
   };
 
+  generateTxCyberSigner = async () => {
+    const { valueAppContextSigner } = this.props;
+    const {
+      cyberSigner,
+      updateValueTxs,
+      updateCallbackSigner,
+    } = valueAppContextSigner;
+
+    if (cyberSigner !== null) {
+      await window.keplr.enable(CYBER.CHAIN_ID);
+      const [{ address }] = await cyberSigner.getAccounts();
+      const msg = await this.getTxs(address);
+      console.log(`msg`, msg);
+      if (msg.length > 0) {
+        updateCallbackSigner(this.updateCallbackFnc);
+        updateValueTxs(msg);
+      }
+    }
+  };
+
+  updateCallbackFnc = (result) => {
+    const { valueAppContextSigner } = this.props;
+    const { updateCallbackSigner } = valueAppContextSigner;
+    const hash = result.transactionHash;
+    updateCallbackSigner(null);
+    console.log('hash :>> ', hash);
+    this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+    this.timeOut = setTimeout(this.confirmTx, 1500);
+  };
+
   onChangeInputAmount = (e) => {
     this.setState({
       toSend: e.target.value,
@@ -472,6 +506,9 @@ class ActionBarContainer extends Component {
     if (defaultAccount.keys === 'keplr') {
       this.generateTxSendKplr();
     }
+    if (defaultAccount.keys === 'cyberSigner') {
+      this.generateTxCyberSigner();
+    }
   };
 
   cleatState = () => {
@@ -494,8 +531,6 @@ class ActionBarContainer extends Component {
       contentHash: '',
     });
     this.timeOut = null;
-    this.ledger = null;
-    this.transport = null;
   };
 
   onChangeInput = async (e) => {
@@ -606,7 +641,7 @@ class ActionBarContainer extends Component {
       stage === STAGE_INIT &&
       type === 'heroes' &&
       defaultAccount !== null &&
-      defaultAccount.keys === 'keplr'
+      defaultAccount.keys !== 'ledger'
     ) {
       return (
         <ActionBar>
@@ -732,6 +767,4 @@ const mapStateToProps = (store) => {
   };
 };
 
-ActionBarContainer.contextType = AppContext;
-
-export default connect(mapStateToProps)(ActionBarContainer);
+export default connect(mapStateToProps)(InnerActionBarContainer);

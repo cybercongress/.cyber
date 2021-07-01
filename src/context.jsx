@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SigningCosmosClient, GasPrice } from '@cosmjs/launchpad';
 import { Decimal } from '@cosmjs/math';
-import { CYBER } from './utils/config';
+import { CYBER, CYBER_SIGNER } from './utils/config';
 
 const valueContext = {
   keplr: null,
   ws: null,
 };
 
+const valueSignerContxt = {
+  tx: null,
+  isVisible: false,
+  cyberSigner: null,
+  callbackFnc: null,
+  stage: CYBER_SIGNER.STAGE_INIT,
+};
+
 export const AppContext = React.createContext(valueContext);
+export const AppContextSigner = React.createContext(valueSignerContxt);
 
 export const useContextProvider = () => useContext(AppContext);
 
@@ -91,6 +100,8 @@ export async function createClient(signer) {
 
 const AppContextProvider = ({ children }) => {
   const [value, setValue] = useState(valueContext);
+  const [valueSigner, setValueSigner] = useState(valueSignerContxt);
+
   const [signer, setSigner] = useState(null);
   const [client, setClient] = useState(null);
 
@@ -128,7 +139,42 @@ const AppContextProvider = ({ children }) => {
 
   console.log('value', value);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  const updateValueIsVisible = (isVisible) => {
+    setValueSigner((item) => ({ ...item, isVisible }));
+  };
+
+  const updateValueTxs = (tx) => {
+    setValueSigner((item) => ({ ...item, tx }));
+  };
+
+  const updateCyberSigner = (cyberSigner) => {
+    setValueSigner((item) => ({ ...item, cyberSigner }));
+  };
+
+  const updateCallbackSigner = (callbackFnc) => {
+    setValueSigner((item) => ({ ...item, callbackFnc }));
+  };
+
+  const updateStageSigner = (stage) => {
+    setValueSigner((item) => ({ ...item, stage }));
+  };
+
+  return (
+    <AppContext.Provider value={value}>
+      <AppContextSigner.Provider
+        value={{
+          ...valueSigner,
+          updateValueIsVisible,
+          updateValueTxs,
+          updateCyberSigner,
+          updateCallbackSigner,
+          updateStageSigner,
+        }}
+      >
+        {children}
+      </AppContextSigner.Provider>
+    </AppContext.Provider>
+  );
 };
 
 export default AppContextProvider;

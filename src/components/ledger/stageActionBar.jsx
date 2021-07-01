@@ -92,6 +92,14 @@ const imgRead = require('../../image/duplicate-outline.svg');
 const imgEth = require('../../image/Ethereum_logo_2014.svg');
 const imgCyber = require('../../image/blue-circle.png');
 const imgCosmos = require('../../image/cosmos-2.svg');
+const imgCyberSigner = require('../../image/wallet-outline.svg');
+
+const imgData = {
+  ledger: imgLedger,
+  keplr: imgKeplr,
+  cyber: imgCyber,
+  cyberSigner: imgCyberSigner,
+};
 
 const T = new LocalizedStrings(i18n);
 const ledger = require('../../image/select-pin-nano2.svg');
@@ -292,6 +300,7 @@ export const StartStageSearchActionBar = ({
   textBtn = 'Cyberlink',
   placeholder = 'add keywords, hash or file',
   keys = 'ledger',
+  node,
 }) => {
   return (
     <ActionBar>
@@ -366,9 +375,9 @@ export const StartStageSearchActionBar = ({
               />
             </Pane>
           }
-          disabled={!contentHash.length}
+          disabled={node === null && !contentHash.length}
           onClick={onClickBtn}
-          img={keys === 'ledger' ? imgLedger : imgKeplr}
+          img={imgData[keys]}
         />
       </Pane>
     </ActionBar>
@@ -1369,6 +1378,12 @@ export const ConnectAddress = ({
                   text="keplr"
                 />
               )}
+              <ButtonIcon
+                onClick={() => selectMethodFunc('cyberSigner')}
+                active={selectMethod === 'cyberSigner'}
+                img={imgCyberSigner}
+                text="cyberSigner"
+              />
             </>
           )}
           {web3 && web3 !== null && ethNetwork && (

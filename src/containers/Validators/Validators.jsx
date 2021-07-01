@@ -39,7 +39,7 @@ import {
   Dots,
   TabBtn,
 } from '../../components';
-import ActionBarContainer from './ActionBarContainer';
+import ActionBarContainer from './actionBar';
 import { i18n } from '../../i18n/en';
 import { CYBER } from '../../utils/config';
 

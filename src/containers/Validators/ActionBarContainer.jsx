@@ -69,7 +69,7 @@ const ActionBarContentText = ({ children, ...props }) => (
   </Pane>
 );
 
-class ActionBarContainer extends Component {
+class InnerActionBarContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -207,59 +207,66 @@ class ActionBarContainer extends Component {
     }
   };
 
-  generateTxKeplr = async () => {
-    const { validators, addressPocket } = this.props;
-    const { keplr } = this.context;
+  getTxsMsgs = async (address) => {
+    const { validators } = this.props;
     const { toSend, txType, valueSelect } = this.state;
     const amount = parseFloat(toSend) * DIVISOR_CYBER_G;
     const validatorAddres = validators.operator_address;
+    const msgs = [];
+    if (txType === TXTYPE_DELEGATE) {
+      msgs.push({
+        type: 'cosmos-sdk/MsgDelegate',
+        value: {
+          amount: {
+            amount: amount.toString(),
+            denom: CYBER.DENOM_CYBER,
+          },
+          delegator_address: address,
+          validator_address: validatorAddres,
+        },
+      });
+    }
+    if (txType === TXTYPE_UNDELEGATE) {
+      msgs.push({
+        type: 'cosmos-sdk/MsgUndelegate',
+        value: {
+          amount: {
+            amount: amount.toString(),
+            denom: CYBER.DENOM_CYBER,
+          },
+          delegator_address: address,
+          validator_address: validatorAddres,
+        },
+      });
+    }
+    if (txType === TXTYPE_REDELEGATE) {
+      msgs.push({
+        type: 'cosmos-sdk/MsgBeginRedelegate',
+        value: {
+          amount: {
+            amount: amount.toString(),
+            denom: CYBER.DENOM_CYBER,
+          },
+          delegator_address: address,
+          validator_dst_address: valueSelect,
+          validator_src_address: validatorAddres,
+        },
+      });
+    }
+
+    return msgs;
+  };
+
+  generateTxKeplr = async () => {
+    const { addressPocket, valueAppContext } = this.props;
+    const { keplr } = valueAppContext;
 
     if (keplr !== null) {
       const chainId = CYBER.CHAIN_ID;
       await window.keplr.enable(chainId);
       const { address } = await keplr.getAccount();
       if (addressPocket !== null && addressPocket.bech32 === address) {
-        const msgs = [];
-        if (txType === TXTYPE_DELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgDelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_address: validatorAddres,
-            },
-          });
-        }
-        if (txType === TXTYPE_UNDELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgUndelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_address: validatorAddres,
-            },
-          });
-        }
-        if (txType === TXTYPE_REDELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgBeginRedelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_dst_address: valueSelect,
-              validator_src_address: validatorAddres,
-            },
-          });
-        }
+        const msgs = await this.getTxsMsgs(address);
         const fee = {
           amount: coins(0, 'uatom'),
           gas: '100000',
@@ -286,6 +293,48 @@ class ActionBarContainer extends Component {
         });
       }
     }
+  };
+
+  generateTxCyberSigner = async () => {
+    const { addressPocket, valueAppContextSigner } = this.props;
+    const {
+      cyberSigner,
+      updateValueTxs,
+      updateCallbackSigner,
+    } = valueAppContextSigner;
+
+    if (cyberSigner !== null) {
+      const [{ address }] = await cyberSigner.getAccounts();
+      if (addressPocket !== null && addressPocket.bech32 === address) {
+        const msgs = await this.getTxsMsgs(address);
+
+        updateCallbackSigner(this.updateCallbackFnc);
+        updateValueTxs(msgs);
+        this.setState({
+          stage: LEDGER_GENERATION,
+        });
+      } else {
+        this.setState({
+          stage: STAGE_ERROR,
+          errorMessage: `Add address ${trimString(
+            address,
+            9,
+            5
+          )} to your pocket or make active `,
+        });
+      }
+    }
+  };
+
+  updateCallbackFnc = (result) => {
+    const { valueAppContextSigner } = this.props;
+    const { updateCallbackSigner } = valueAppContextSigner;
+
+    const hash = result.transactionHash;
+    updateCallbackSigner(null);
+    console.log('hash :>> ', hash);
+    this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+    this.timeOut = setTimeout(this.confirmTx, 1500);
   };
 
   generateTx = async () => {
@@ -430,8 +479,14 @@ class ActionBarContainer extends Component {
     const { addressPocket } = this.props;
     if (addressPocket !== null && addressPocket.keys === 'keplr') {
       this.generateTxKeplr();
-    } else {
+    }
+
+    if (addressPocket !== null && addressPocket.keys === 'ledger') {
       this.getLedgerAddress();
+    }
+
+    if (addressPocket !== null && addressPocket.keys === 'cyberSigner') {
+      this.generateTxCyberSigner();
     }
   };
 
@@ -740,6 +795,4 @@ class ActionBarContainer extends Component {
   }
 }
 
-ActionBarContainer.contextType = AppContext;
-
-export default ActionBarContainer;
+export default InnerActionBarContainer;

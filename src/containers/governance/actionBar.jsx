@@ -49,7 +49,7 @@ const {
 
 const LEDGER_TX_ACOUNT_INFO = 10;
 
-class ActionBar extends Component {
+class InnerActionBarContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -141,7 +141,7 @@ class ActionBar extends Component {
     }
   };
 
-  generateTxKeplr = async () => {
+  getTxsMsgs = async (address) => {
     const {
       valueSelect,
       valueDescription,
@@ -153,105 +153,140 @@ class ActionBar extends Component {
       nameUpgrade,
       heightUpgrade,
     } = this.state;
-    const { keplr } = this.context;
+    let deposit = [];
+    const title = valueTitle;
+    const description = valueDescription;
+    const recipient = valueAddressRecipient;
+    let amount = [];
+    let msgs = [];
+
+    if (valueDeposit > 0) {
+      deposit = coins(valueDeposit * CYBER.DIVISOR_CYBER_G, 'eul');
+    }
+
+    if (valueAmountRecipient > 0) {
+      amount = coins(valueAmountRecipient * CYBER.DIVISOR_CYBER_G, 'eul');
+    }
+
+    switch (valueSelect) {
+      case 'textProposal': {
+        msgs.push({
+          type: 'cosmos-sdk/MsgSubmitProposal',
+          value: {
+            content: {
+              type: 'cosmos-sdk/TextProposal',
+              value: {
+                description,
+                title,
+              },
+            },
+            proposer: address,
+            initial_deposit: deposit,
+          },
+        });
+        break;
+      }
+      case 'communityPool': {
+        msgs.push({
+          type: 'cosmos-sdk/MsgSubmitProposal',
+          value: {
+            content: {
+              type: 'cosmos-sdk/CommunityPoolSpendProposal',
+              value: {
+                amount,
+                description,
+                recipient,
+                title,
+              },
+            },
+            initial_deposit: deposit,
+            proposer: address,
+          },
+        });
+        break;
+      }
+      case 'paramChange': {
+        msgs.push({
+          type: 'cosmos-sdk/MsgSubmitProposal',
+          value: {
+            content: {
+              type: 'cosmos-sdk/ParameterChangeProposal',
+              value: {
+                changes: changeParam,
+                description,
+                title,
+              },
+            },
+            proposer: address,
+            initial_deposit: deposit,
+          },
+        });
+        break;
+      }
+
+      case 'softwareUpgrade': {
+        msgs.push({
+          type: 'cosmos-sdk/MsgSubmitProposal',
+          value: {
+            content: {
+              type: 'cosmos-sdk/SoftwareUpgradeProposal',
+              value: {
+                description,
+                title,
+                plan: { name: nameUpgrade, height: heightUpgrade },
+              },
+            },
+            proposer: address,
+            initial_deposit: deposit,
+          },
+        });
+        break;
+      }
+      default: {
+        msgs = [];
+      }
+    }
+    return msgs;
+  };
+
+  updateCallbackFnc = (result) => {
+    const { valueAppContextSigner } = this.props;
+    const { updateCallbackSigner } = valueAppContextSigner;
+    const hash = result.transactionHash;
+    updateCallbackSigner(null);
+    console.log('hash :>> ', hash);
+    this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+    this.timeOut = setTimeout(this.confirmTx, 1500);
+  };
+
+  generateTxCyberSigner = async () => {
+    const { valueAppContextSigner } = this.props;
+    const {
+      cyberSigner,
+      updateValueTxs,
+      updateCallbackSigner,
+    } = valueAppContextSigner;
+
+    if (cyberSigner !== null) {
+      const [{ address }] = await cyberSigner.getAccounts();
+      const msg = await this.getTxsMsgs(address);
+      console.log(`msg`, msg);
+      if (msg.length > 0) {
+        updateCallbackSigner(this.updateCallbackFnc);
+        updateValueTxs(msg);
+      }
+    }
+  };
+
+  generateTxKeplr = async () => {
+    const { valueAppContext } = this.props;
+    const { keplr } = valueAppContext;
     console.log('keplr', keplr);
     if (keplr !== null) {
-      let deposit = [];
-      const title = valueTitle;
-      const description = valueDescription;
-      const recipient = valueAddressRecipient;
-      let amount = [];
-      let msgs = [];
       const chainId = CYBER.CHAIN_ID;
       await window.keplr.enable(chainId);
-      const accounts = await keplr.getAccount();
-
-      if (valueDeposit > 0) {
-        deposit = coins(valueDeposit * CYBER.DIVISOR_CYBER_G, 'eul');
-      }
-
-      if (valueAmountRecipient > 0) {
-        amount = coins(valueAmountRecipient * CYBER.DIVISOR_CYBER_G, 'eul');
-      }
-
-      switch (valueSelect) {
-        case 'textProposal': {
-          msgs.push({
-            type: 'cosmos-sdk/MsgSubmitProposal',
-            value: {
-              content: {
-                type: 'cosmos-sdk/TextProposal',
-                value: {
-                  description,
-                  title,
-                },
-              },
-              proposer: accounts.address,
-              initial_deposit: deposit,
-            },
-          });
-          break;
-        }
-        case 'communityPool': {
-          msgs.push({
-            type: 'cosmos-sdk/MsgSubmitProposal',
-            value: {
-              content: {
-                type: 'cosmos-sdk/CommunityPoolSpendProposal',
-                value: {
-                  amount,
-                  description,
-                  recipient,
-                  title,
-                },
-              },
-              initial_deposit: deposit,
-              proposer: accounts.address,
-            },
-          });
-          break;
-        }
-        case 'paramChange': {
-          msgs.push({
-            type: 'cosmos-sdk/MsgSubmitProposal',
-            value: {
-              content: {
-                type: 'cosmos-sdk/ParameterChangeProposal',
-                value: {
-                  changes: changeParam,
-                  description,
-                  title,
-                },
-              },
-              proposer: accounts.address,
-              initial_deposit: deposit,
-            },
-          });
-          break;
-        }
-
-        case 'softwareUpgrade': {
-          msgs.push({
-            type: 'cosmos-sdk/MsgSubmitProposal',
-            value: {
-              content: {
-                type: 'cosmos-sdk/SoftwareUpgradeProposal',
-                value: {
-                  description,
-                  title,
-                  plan: { name: nameUpgrade, height: heightUpgrade },
-                },
-              },
-              proposer: accounts.address,
-              initial_deposit: deposit,
-            },
-          });
-          break;
-        }
-        default: {
-          msgs = [];
-        }
-      }
+      const { address } = await keplr.getAccount();
+      const msgs = await this.getTxsMsgs(address);
 
       const fee = {
         amount: coins(0, 'uatom'),
@@ -485,6 +520,9 @@ class ActionBar extends Component {
       }
       if (account.keys === 'keplr') {
         this.generateTxKeplr();
+      }
+      if (account.keys === 'cyberSigner') {
+        this.generateTxCyberSigner();
       }
     }
   };
@@ -807,6 +845,4 @@ class ActionBar extends Component {
   }
 }
 
-ActionBar.contextType = AppContext;
-
-export default ActionBar;
+export default InnerActionBarContainer;

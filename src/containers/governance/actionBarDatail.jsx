@@ -32,6 +32,14 @@ import { LEDGER, CYBER, PATTERN_CYBER } from '../../utils/config';
 const imgKeplr = require('../../image/keplr-icon.svg');
 const imgLedger = require('../../image/ledger.svg');
 const imgCyber = require('../../image/blue-circle.png');
+const imgCyberSigner = require('../../image/wallet-outline.svg');
+
+const imgData = {
+  ledger: imgLedger,
+  keplr: imgKeplr,
+  cyber: imgCyber,
+  cyberSigner: imgCyberSigner,
+};
 
 const {
   MEMO,
@@ -52,7 +60,7 @@ const LEDGER_TX_ACOUNT_INFO = 10;
 const STAGE_CLI_ADD_ADDRESS = 1.3;
 const STAGE_GENERATION_TX = 12.2;
 
-class ActionBarDetail extends Component {
+class InnerActionBarContainerDetail extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -143,45 +151,81 @@ class ActionBarDetail extends Component {
     }
   };
 
-  generateTxKeplr = async () => {
+  getTxsMsgs = async (address) => {
     const { valueSelect, valueDeposit } = this.state;
     const { period, id } = this.props;
-    const { keplr } = this.context;
+    const msgs = [];
+
+    let amount = [];
+    if (parseFloat(valueDeposit) > 0) {
+      amount = coins(valueDeposit * CYBER.DIVISOR_CYBER_G, 'eul');
+    }
+
+    if (period === 'deposit') {
+      msgs.push({
+        type: 'cosmos-sdk/MsgDeposit',
+        value: {
+          amount,
+          depositor: address,
+          proposal_id: id,
+        },
+      });
+    }
+
+    if (period === 'vote') {
+      msgs.push({
+        type: 'cosmos-sdk/MsgVote',
+        value: {
+          option: valueSelect,
+          voter: address,
+          proposal_id: id,
+        },
+      });
+    }
+    return msgs;
+  };
+
+  updateCallbackFnc = (result) => {
+    const { valueAppContextSigner } = this.props;
+    const { updateCallbackSigner } = valueAppContextSigner;
+    const hash = result.transactionHash;
+    updateCallbackSigner(null);
+    console.log('hash :>> ', hash);
+    this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+    this.timeOut = setTimeout(this.confirmTx, 1500);
+  };
+
+  generateTxCyberSigner = async () => {
+    const { valueAppContextSigner } = this.props;
+    const {
+      cyberSigner,
+      updateValueTxs,
+      updateCallbackSigner,
+    } = valueAppContextSigner;
+
+    if (cyberSigner !== null) {
+      const [{ address }] = await cyberSigner.getAccounts();
+      const msg = await this.getTxs(address);
+      console.log(`msg`, msg);
+      if (msg.length > 0) {
+        updateCallbackSigner(this.updateCallbackFnc);
+        updateValueTxs(msg);
+      }
+    }
+  };
+
+  generateTxKeplr = async () => {
+    const { valueAppContext } = this.props;
+    const { keplr } = valueAppContext;
     if (keplr !== null) {
       const chainId = CYBER.CHAIN_ID;
       await window.keplr.enable(chainId);
-      const accounts = await keplr.getAccount();
+      const { address } = await keplr.getAccount();
       this.setState({
         stage: STAGE_GENERATION_TX,
       });
 
-      let amount = [];
-      if (parseFloat(valueDeposit) > 0) {
-        amount = coins(valueDeposit * CYBER.DIVISOR_CYBER_G, 'eul');
-      }
-      const msgs = [];
-
-      if (period === 'deposit') {
-        msgs.push({
-          type: 'cosmos-sdk/MsgDeposit',
-          value: {
-            amount,
-            depositor: accounts.address,
-            proposal_id: id,
-          },
-        });
-      }
-
-      if (period === 'vote') {
-        msgs.push({
-          type: 'cosmos-sdk/MsgVote',
-          value: {
-            option: valueSelect,
-            voter: accounts.address,
-            proposal_id: id,
-          },
-        });
-      }
+      const msgs = await this.getTxsMsgs(address);
 
       const fee = {
         amount: coins(0, 'uatom'),
@@ -438,6 +482,9 @@ class ActionBarDetail extends Component {
     if (defaultAccount.keys === 'keplr') {
       this.generateTxKeplr();
     }
+    if (defaultAccount.keys === 'cyberSigner') {
+      this.generateTxCyberSigner();
+    }
   };
 
   onChangeValueAddress = (e) => {
@@ -505,7 +552,7 @@ class ActionBarDetail extends Component {
             }
             disabled={!parseFloat(valueDeposit) > 0}
             onClick={this.onClickUsingLedger}
-            img={defaultAccount.keys === 'ledger' ? imgLedger : imgKeplr}
+            img={imgData[defaultAccount.keys]}
           />
         </ActionBar>
       );
@@ -545,7 +592,7 @@ class ActionBarDetail extends Component {
               </Pane>
             }
             onClick={this.onClickUsingLedger}
-            img={defaultAccount.keys === 'ledger' ? imgLedger : imgKeplr}
+            img={imgData[defaultAccount.keys]}
           />
         </ActionBar>
       );
@@ -636,6 +683,4 @@ class ActionBarDetail extends Component {
   }
 }
 
-ActionBarDetail.contextType = AppContext;
-
-export default ActionBarDetail;
+export default InnerActionBarContainerDetail;

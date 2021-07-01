@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Pane } from '@cybercongress/gravity';
+import { Pane, ActionBar } from '@cybercongress/gravity';
 import { connect } from 'react-redux';
-import ActionBar from './actionBar';
+import ActionBarContainer from './actionBarContainer';
 import { getProposals, getMinDeposit } from '../../utils/governance';
 import Columns from './components/columns';
 import { AcceptedCard, ActiveCard, RejectedCard } from './components/card';
@@ -166,7 +166,25 @@ console.log('tableData', tableData)
           <Columns title="Rejected">{rejected}</Columns>
         </Pane>
       </main>
-      <ActionBar account={account} update={feachProposals} />
+      {account !== null ? (
+        <ActionBarContainer account={account} update={feachProposals} />
+      ) : (
+        <ActionBar>
+          <Pane>
+            <Link
+              style={{
+                paddingTop: 10,
+                paddingBottom: 10,
+                display: 'block',
+              }}
+              className="btn"
+              to="/pocket"
+            >
+              add address to your pocket
+            </Link>
+          </Pane>
+        </ActionBar>
+      )}
     </div>
   );
 }

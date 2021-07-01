@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { Link } from 'react-router-dom';
 import { Pane, Input, Text, ActionBar, Button } from '@cybercongress/gravity';
@@ -17,8 +17,10 @@ import {
   PATTERN_COSMOS,
   PATTERN_CYBER,
   POCKET,
+  CYBER_SIGNER,
 } from '../../utils/config';
 import { fromBech32, trimString } from '../../utils/utils';
+import { AppContextSigner } from '../../context';
 
 const {
   STAGE_INIT,
@@ -52,6 +54,13 @@ function ActionBarConnect({
   accountsETH,
   selectAccount,
 }) {
+  const {
+    cyberSigner,
+    updateValueTxs,
+    updateValueIsVisible,
+    updateCallbackSigner,
+    updateStageSigner,
+  } = useContext(AppContextSigner);
   const [stage, setStage] = useState(STAGE_INIT);
   const [hdpath, setHDpath] = useState([44, 118, 0, 0, 0]);
   const [connectLedger, setConnectLedger] = useState(null);
@@ -143,6 +152,10 @@ function ActionBarConnect({
 
       case 'MetaMask':
         onClickConnectWeb3();
+        break;
+
+      case 'cyberSigner':
+        onClickConnectCyberSigner();
         break;
 
       default:
@@ -474,6 +487,117 @@ function ActionBarConnect({
         updateFuncActionBar();
       }
     }
+  };
+
+  const callbackSigner = async (signerCyber) => {
+    console.log(`callbackSigner`, signerCyber);
+    const [{ address }] = await signerCyber.getAccounts();
+    const pk = Buffer.from(signerCyber.pubkey).toString('hex');
+    console.log(`callbackSigner address`, address);
+    console.log(`callbackSigner pk`, pk);
+    updateCallbackSigner(null);
+    const accounts = {};
+    let key = 'Account 1';
+    let dataPocketAccount = null;
+    let valueObj = {};
+    let pocketAccount = {};
+    let count = 1;
+
+    const localStorageStory = await localStorage.getItem('pocketAccount');
+    const localStoragePocket = await localStorage.getItem('pocket');
+    const localStorageCount = await localStorage.getItem('count');
+    if (localStorageCount !== null) {
+      const dataCount = JSON.parse(localStorageCount);
+      count = parseFloat(dataCount);
+      key = `Account ${count}`;
+    }
+    localStorage.setItem('count', JSON.stringify(count + 1));
+    if (localStorageStory !== null) {
+      dataPocketAccount = JSON.parse(localStorageStory);
+      valueObj = Object.values(dataPocketAccount);
+      if (selectAccount !== null) {
+        key = selectAccount.key;
+      }
+    }
+    if (selectNetwork === 'cyber' || addCyberAddress) {
+      const cyberBech32 = address;
+      if (
+        selectAccount !== null ||
+        !checkAddress(valueObj, 'cyber', cyberBech32)
+      ) {
+        const seedBase64 = btoa(signerCyber.secret.data);
+        accounts.cyber = {
+          bech32: cyberBech32,
+          keys: 'cyberSigner',
+          pk,
+          path: HDPATH,
+          secret: seedBase64,
+        };
+      }
+    }
+    if (selectNetwork === 'cosmos') {
+      const cosmosAddress = fromBech32(address, 'cosmos');
+      const cosmosBech32 = cosmosAddress;
+      if (
+        selectAccount !== null ||
+        !checkAddress(valueObj, 'cosmos', cosmosBech32)
+      ) {
+        accounts.cosmos = {
+          bech32: cosmosBech32,
+          keys: 'cyberSigner',
+          pk,
+          path: HDPATH,
+        };
+      }
+    }
+    setStage(STAGE_ADD_ADDRESS_OK);
+    if (selectAccount === null) {
+      if (localStorageStory !== null) {
+        if (Object.keys(accounts).length > 0) {
+          pocketAccount = { [key]: accounts, ...dataPocketAccount };
+        }
+      } else {
+        pocketAccount = { [key]: accounts };
+      }
+      if (Object.keys(pocketAccount).length > 0) {
+        localStorage.setItem('pocketAccount', JSON.stringify(pocketAccount));
+      }
+    } else {
+      dataPocketAccount[selectAccount.key][selectNetwork] =
+        accounts[selectNetwork];
+      console.log('dataPocketAccount', dataPocketAccount);
+      if (Object.keys(dataPocketAccount).length > 0) {
+        localStorage.setItem(
+          'pocketAccount',
+          JSON.stringify(dataPocketAccount)
+        );
+      }
+      if (localStoragePocket !== null) {
+        const localStoragePocketData = JSON.parse(localStoragePocket);
+        const keyPocket = Object.keys(localStoragePocketData)[0];
+        localStoragePocketData[keyPocket][selectNetwork] =
+          accounts[selectNetwork];
+        if (keyPocket === selectAccount.key) {
+          localStorage.setItem(
+            'pocket',
+            JSON.stringify(localStoragePocketData)
+          );
+        }
+      }
+    }
+    cleatState();
+    if (updateAddress) {
+      updateAddress();
+    }
+    if (updateFuncActionBar) {
+      updateFuncActionBar();
+    }
+  };
+
+  const onClickConnectCyberSigner = () => {
+    updateCallbackSigner(callbackSigner);
+    updateValueIsVisible(true);
+    updateStageSigner(CYBER_SIGNER.STAGE_INIT_ACC);
   };
 
   const connectKeplr = async () => {

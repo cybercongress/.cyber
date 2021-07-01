@@ -11,16 +11,19 @@ import ActionBarWeb3 from './actionBarWeb3';
 import ActionBarUser from './actionBarUser';
 import ActionBarLedger from './actionBarLedger';
 import ActionBarConnect from './actionBarConnect';
+import ActionBarCyberSigner from './actionBarCyberSigner';
 
 const imgLedger = require('../../image/ledger.svg');
 const imgKeplr = require('../../image/keplr-icon.svg');
 const imgRead = require('../../image/duplicate-outline.svg');
+const imgCyberSigner = require('../../image/wallet-outline.svg');
 
 const STAGE_INIT = 1;
 const STAGE_CONNECT = 2;
 const STAGE_SEND_LEDGER = 3.1;
 const STAGE_SEND_KEPLR = 4.1;
 const STAGE_SEND_READ_ONLY = 5.1;
+const STAGE_SEND_CYBER_SIGNER = 6.1;
 
 const ButtonImgText = ({ img, text = 'Send', ...props }) => (
   <Button marginX={10} {...props}>
@@ -271,6 +274,29 @@ function ActionBar({
     );
   }
 
+  if (typeActionBar === 'cyberSigner' && stage === STAGE_INIT) {
+    return (
+      <ActionBarGravity>
+        <Pane>
+          {connect && (
+            <Button marginX={10} onClick={() => setStage(STAGE_CONNECT)}>
+              Connect
+            </Button>
+          )}
+          <ButtonImgText
+            img={imgCyberSigner}
+            onClick={() => setStage(STAGE_SEND_CYBER_SIGNER)}
+          />
+          {makeActive && (
+            <Button marginX={10} onClick={() => changeDefaultAccounts()}>
+              Activate
+            </Button>
+          )}
+        </Pane>
+      </ActionBarGravity>
+    );
+  }
+
   if (typeActionBar === 'gol' && stage === STAGE_INIT) {
     return (
       <ActionBarGravity>
@@ -309,6 +335,16 @@ function ActionBar({
     return (
       <ActionBarKeplr
         keplr={keplr}
+        selectAccount={selectAccount}
+        updateAddress={updateFuncActionBar}
+        updateBalance={updateAddress}
+      />
+    );
+  }
+
+  if (stage === STAGE_SEND_CYBER_SIGNER) {
+    return (
+      <ActionBarCyberSigner
         selectAccount={selectAccount}
         updateAddress={updateFuncActionBar}
         updateBalance={updateAddress}
