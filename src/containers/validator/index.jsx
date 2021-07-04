@@ -248,9 +248,9 @@ class ValidatorsDetails extends React.PureComponent {
     } = this.state;
     const { match, mobile } = this.props;
     const { address } = match.params;
-    // console.log('validatorInfo', validatorInfo.consensus_pubkey);
+    console.log('validatorInfo', validatorInfo);
     let content;
-console.log('unStake', unStake)
+
     if (loader) {
       return (
         <div
@@ -275,7 +275,7 @@ console.log('unStake', unStake)
     if (selected === 'fans') {
       content = (
         <Route
-          path="/network/euler/hero/:address/fans"
+          path="/network/bostrom/hero/:address/fans"
           render={() => <Fans data={fans} />}
         />
       );
@@ -283,7 +283,7 @@ console.log('unStake', unStake)
     if (selected === 'rumors') {
       content = (
         <Route
-          path="/network/euler/hero/:address/rumors"
+          path="/network/bostrom/hero/:address/rumors"
           render={() => <Rumors accountUser={validatorInfo.operator_address} />}
         />
       );
@@ -291,7 +291,7 @@ console.log('unStake', unStake)
     if (selected === 'leadership') {
       content = (
         <Route
-          path="/network/euler/hero/:address/leadership"
+          path="/network/bostrom/hero/:address/leadership"
           render={() => (
             <Leadership accountUser={validatorInfo.delegateAddress} />
           )}
@@ -324,23 +324,23 @@ console.log('unStake', unStake)
             <TabBtn
               text="Fans"
               isSelected={selected === 'fans'}
-              to={`/network/euler/hero/${address}/fans`}
+              to={`/network/bostrom/hero/${address}/fans`}
             />
             <TabBtn
               text="Main"
               isSelected={selected === 'main'}
-              to={`/network/euler/hero/${address}`}
+              to={`/network/bostrom/hero/${address}`}
             />
             <TabBtn
               text="Rumors"
               isSelected={selected === 'rumors'}
-              to={`/network/euler/hero/${address}/rumors`}
+              to={`/network/bostrom/hero/${address}/rumors`}
             />
 
             <TabBtn
               text="Leadership"
               isSelected={selected === 'leadership'}
-              to={`/network/euler/hero/${address}/leadership`}
+              to={`/network/bostrom/hero/${address}/leadership`}
             />
           </Tablist>
           <Pane

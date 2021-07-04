@@ -4,6 +4,7 @@ import { Pane, Icon } from '@cybercongress/gravity';
 import { CardStatisics } from '../../../components';
 import { formatNumber } from '../../../utils/utils';
 import Txs from '../tx';
+import AccountCount from '../accountCount';
 
 function KnowledgeTab({ linksCount, cidsCount, accountsCount, inlfation }) {
   try {
@@ -16,19 +17,11 @@ function KnowledgeTab({ linksCount, cidsCount, accountsCount, inlfation }) {
             value={formatNumber(linksCount)}
           />
         </Link>
-        <Link
-          to="/gol/relevance"
-          style={{
-            display: 'contents',
-            textDecoration: 'none',
-          }}
-        >
-          <CardStatisics title="Objects" value={formatNumber(cidsCount)} link />
-        </Link>
+        <CardStatisics title="Objects" value={formatNumber(cidsCount)} link />
 
-        <CardStatisics title="Subjects" value={formatNumber(accountsCount)} />
+        <CardStatisics title="Subjects" value={<AccountCount />} />
 
-        <Link to="/network/euler/tx">
+        <Link to="/network/bostrom/tx">
           <CardStatisics title="Transactions" value={<Txs />} link />
         </Link>
         <CardStatisics

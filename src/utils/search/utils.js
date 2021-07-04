@@ -210,10 +210,11 @@ export const getString = (string) =>
 export const search = async (keywordHash) =>
   axios({
     method: 'get',
-    url: `${CYBER_NODE_URL_API}/search?cid=%22${keywordHash}%22&page=0&perPage=1000`,
-  }).then((response) =>
-    response.data.result ? response.data.result.cids : []
-  );
+    url: `${CYBER_NODE_URL_LCD}/rank/search?cid=${keywordHash}&page=0&perPage=1000`,
+  }).then((response) => {
+    console.log('RESPONSE', response.data.result.result);
+    return response.data.result.result ? response.data.result.result : [];
+  });
 
 export const getRankGrade = (rank) => {
   let from;
@@ -326,7 +327,7 @@ export const getValidatorsUnbonding = async () => {
   try {
     const response = await axios({
       method: 'get',
-      url: `${CYBER_NODE_URL_LCD}/staking/validators?status=unbonding`,
+      url: `${CYBER_NODE_URL_LCD}/staking/validators?status=BOND_STATUS_UNBONDING`,
     });
     return response.data.result;
   } catch (e) {
@@ -339,7 +340,7 @@ export const getValidatorsUnbonded = async () => {
   try {
     const response = await axios({
       method: 'get',
-      url: `${CYBER_NODE_URL_LCD}/staking/validators?status=unbonded`,
+      url: `${CYBER_NODE_URL_LCD}/staking/validators?status=BOND_STATUS_UNBONDED`,
     });
     return response.data.result;
   } catch (e) {
@@ -401,7 +402,7 @@ export const getAccountBandwidth = async (address) => {
   try {
     const response = await axios({
       method: 'get',
-      url: `${CYBER_NODE_URL_API}/account_bandwidth?address="${address}"`,
+      url: `${CYBER_NODE_URL_LCD}/bandwidth/account/${address}`,
     });
     return response.data.result;
   } catch (e) {
@@ -941,6 +942,19 @@ export const getParamInlfation = async () => {
   }
 };
 
+export const getParamEnergy = async () => {
+  try {
+    const response = await axios({
+      method: 'get',
+      url: `${CYBER_NODE_URL_LCD}/cyber/energy/v1beta1/resources/params`,
+    });
+    return response.data.params;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+};
+
 export const getParamNetwork = async (address, node) => {
   try {
     let staking = null;
@@ -950,36 +964,49 @@ export const getParamNetwork = async (address, node) => {
     let gov = null;
     let rank = null;
     let inlfation = null;
+    let energy = null;
 
     const dataStaking = await getParamStaking();
+    console.log(`dataStaking`, dataStaking)
     if (dataStaking !== null) {
       staking = dataStaking;
     }
     const dataSlashing = await getParamSlashing();
+    console.log(`dataSlashing`, dataSlashing)
     if (dataSlashing !== null) {
       slashing = dataSlashing;
     }
     const dataDistribution = await getParamDistribution();
+    console.log(`dataDistribution`, dataDistribution)
     if (dataDistribution !== null) {
       distribution = dataDistribution;
     }
     const dataGov = await getParamGov();
+    console.log(`dataGov`, dataGov)
     if (dataGov !== null) {
       gov = dataGov;
     }
     const dataBandwidth = await getParamBandwidth();
+    console.log(`dataBandwidth`, dataBandwidth)
     if (dataBandwidth !== null) {
       bandwidth = dataBandwidth;
     }
 
     const dataRank = await getParamRank();
+    console.log(`dataRank`, dataRank)
     if (dataRank !== null) {
       rank = dataRank;
     }
 
     const dataInlfation = await getParamInlfation();
+    console.log(`dataInlfation`, dataInlfation)
     if (dataInlfation !== null) {
       inlfation = dataInlfation;
+    }
+
+    const dataEnergy = await getParamEnergy();
+    if (dataEnergy !== null) {
+      energy = dataEnergy;
     }
 
     const response = {
@@ -990,6 +1017,7 @@ export const getParamNetwork = async (address, node) => {
       gov,
       rank,
       inlfation,
+      energy,
     };
 
     return response;
@@ -1228,41 +1256,55 @@ export const authAccounts = async (address) => {
 };
 
 export const getAvatarIpfs = async (cid, ipfs) => {
-  const responseDag = await ipfs.dag.get(cid, {
-    localResolve: false,
-  });
+  if (ipfs !== null) {
+    const responseDag = await ipfs.dag.get(cid, {
+      localResolve: false,
+    });
 
-  if (responseDag.value.size <= 1.5 * 10 ** 7) {
-    const responsePin = ipfs.pin.add(cid);
-    console.log('responsePin', responsePin);
-    let mime;
+    if (responseDag.value.size <= 1.5 * 10 ** 7) {
+      const responsePin = ipfs.pin.add(cid);
+      console.log('responsePin', responsePin);
+      let mime;
 
-    const responseCat = uint8ArrayConcat(await all(ipfs.cat(cid)));
+      const responseCat = uint8ArrayConcat(await all(ipfs.cat(cid)));
 
-    const data = responseCat;
-    // const buf = someVar;
-    // const bufs = [];
-    // bufs.push(buf);
-    // const data = Buffer.concat(bufs);
-    const dataFileType = await FileType.fromBuffer(data);
-    if (dataFileType !== undefined) {
-      mime = dataFileType.mime;
-      if (mime.indexOf('image') !== -1) {
-        // const dataBase64 = data.toString('base64');
-        const dataBase64 = uint8ArrayToAsciiString(data, 'base64');
-        const file = `data:${mime};base64,${dataBase64}`;
-        return file;
+      const data = responseCat;
+      // const buf = someVar;
+      // const bufs = [];
+      // bufs.push(buf);
+      // const data = Buffer.concat(bufs);
+      const dataFileType = await FileType.fromBuffer(data);
+      if (dataFileType !== undefined) {
+        mime = dataFileType.mime;
+        if (mime.indexOf('image') !== -1) {
+          // const dataBase64 = data.toString('base64');
+          const dataBase64 = uint8ArrayToAsciiString(data, 'base64');
+          const file = `data:${mime};base64,${dataBase64}`;
+          return file;
+        }
+      }
+      const dataBase64 = uint8ArrayToAsciiString(data);
+      // console.log(`dataBase64`, dataBase64);
+      if (isSvg(dataBase64)) {
+        const svg = `data:image/svg+xml;base64,${uint8ArrayToAsciiString(
+          data,
+          'base64'
+        )}`;
+        return svg;
       }
     }
-    const dataBase64 = uint8ArrayToAsciiString(data);
-    // console.log(`dataBase64`, dataBase64);
-    if (isSvg(dataBase64)) {
-      const svg = `data:image/svg+xml;base64,${uint8ArrayToAsciiString(
-        data,
-        'base64'
-      )}`;
-      return svg;
-    }
+  } else {
+    const ipfsGetPromise = () =>
+      new Promise((resolve, reject) => {
+        axios({
+          method: 'get',
+          url: `https://ipfs.io/ipfs/${cid}`,
+        }).then((response) => {
+          // clearTimeout(timerId);
+          resolve(response.data);
+        });
+      });
+    return Promise.race([ipfsGetPromise()]);
   }
   return null;
 };

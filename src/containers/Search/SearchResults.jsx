@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Pane, SearchItem, Text } from '@cybercongress/gravity';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { getIpfsHash, search, getRankGrade } from '../../utils/search/utils';
+import { getIpfsHash, getRankGrade } from '../../utils/search/utils';
 import {
   formatNumber,
   exponentialToDecimal,
@@ -27,8 +27,20 @@ import {
 } from '../../utils/config';
 import { setQuery } from '../../redux/actions/query';
 import ContentItem from '../ipfs/contentItem';
+import { AppContext } from '../../context';
+
+const search = async (client, hash) => {
+  try {
+    const responseSearchResults = await client.search(hash);
+    console.log(`responseSearchResults`, responseSearchResults);
+    return responseSearchResults.result ? responseSearchResults.result : [];
+  } catch (error) {
+    return [];
+  }
+};
 
 function SearchResults({ node, mobile, setQueryProps }) {
+  const { jsCyber } = useContext(AppContext);
   const { query } = useParams();
   const location = useLocation();
   const [searchResults, setSearchResults] = useState({});
@@ -41,42 +53,47 @@ function SearchResults({ node, mobile, setQueryProps }) {
     const feachData = async () => {
       setLoading(true);
       setQueryProps(query);
-      let keywordHashTemp = '';
-      let keywordHashNull = '';
-      let searchResultsData = [];
-      if (query.match(PATTERN_IPFS_HASH)) {
-        keywordHashTemp = query;
-      } else {
-        keywordHashTemp = await getIpfsHash(query.toLowerCase());
-      }
+      if (jsCyber !== null) {
+        let keywordHashTemp = '';
+        let keywordHashNull = '';
+        let searchResultsData = [];
+        if (query.match(PATTERN_IPFS_HASH)) {
+          keywordHashTemp = query;
+        } else {
+          keywordHashTemp = await getIpfsHash(query.toLowerCase());
+        }
 
-      let responseSearchResults = await search(keywordHashTemp);
-      if (responseSearchResults.length === 0) {
-        const queryNull = 'zero';
-        keywordHashNull = await getIpfsHash(queryNull);
-        responseSearchResults = await search(keywordHashNull);
+        let responseSearchResults = await search(jsCyber, keywordHashTemp);
+        console.log(`responseSearchResults`, responseSearchResults);
+        if (responseSearchResults.length === 0) {
+          const queryNull = '0';
+          keywordHashNull = await getIpfsHash(queryNull);
+          responseSearchResults = await search(jsCyber, keywordHashNull);
+        }
+        if (responseSearchResults.length > 0) {
+          searchResultsData = responseSearchResults.reduce(
+            (obj, item) => ({
+              ...obj,
+              [item.cid]: {
+                cid: item.cid,
+                rank: item.rank,
+                grade: getRankGrade(item.rank),
+                status: node !== null ? 'understandingState' : 'impossibleLoad',
+                query,
+                text: item.cid,
+                content: false,
+              },
+            }),
+            {}
+          );
+        }
+        setKeywordHash(keywordHashTemp);
+        setSearchResults(searchResultsData);
+        setLoading(false);
       }
-      searchResultsData = responseSearchResults.reduce(
-        (obj, item) => ({
-          ...obj,
-          [item.cid]: {
-            cid: item.cid,
-            rank: item.rank,
-            grade: getRankGrade(item.rank),
-            status: node !== null ? 'understandingState' : 'impossibleLoad',
-            query,
-            text: item.cid,
-            content: false,
-          },
-        }),
-        {}
-      );
-      setKeywordHash(keywordHashTemp);
-      setSearchResults(searchResultsData);
-      setLoading(false);
     };
     feachData();
-  }, [query, location, update]);
+  }, [query, location, update, jsCyber]);
 
   useEffect(() => {
     setRankLink(null);
@@ -142,7 +159,7 @@ function SearchResults({ node, mobile, setQueryProps }) {
         alignItems="center"
         marginBottom="10px"
       >
-        <Link className="SearchItem" to={`/network/euler/contract/${query}`}>
+        <Link className="SearchItem" to={`/network/bostrom/contract/${query}`}>
           <SearchItem
             hash={`${query}_PATTERN_CYBER`}
             text="Explore details of contract"
@@ -163,7 +180,7 @@ function SearchResults({ node, mobile, setQueryProps }) {
         alignItems="center"
         marginBottom="10px"
       >
-        <Link className="SearchItem" to={`/network/euler/hero/${query}`}>
+        <Link className="SearchItem" to={`/network/bostrom/hero/${query}`}>
           <SearchItem
             hash={`${query}_PATTERN_CYBER_VALOPER`}
             text="Explore details of hero"
@@ -184,7 +201,7 @@ function SearchResults({ node, mobile, setQueryProps }) {
         alignItems="center"
         marginBottom="10px"
       >
-        <Link className="SearchItem" to={`/network/euler/tx/${query}`}>
+        <Link className="SearchItem" to={`/network/bostrom/tx/${query}`}>
           <SearchItem
             hash={`${query}_PATTERN_TX`}
             text="Explore details of tx "
@@ -205,7 +222,7 @@ function SearchResults({ node, mobile, setQueryProps }) {
         alignItems="center"
         marginBottom="10px"
       >
-        <Link className="SearchItem" to={`/network/euler/block/${query}`}>
+        <Link className="SearchItem" to={`/network/bostrom/block/${query}`}>
           <SearchItem
             hash={`${query}_PATTERN_BLOCK`}
             text="Explore details of block "

@@ -2,18 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Pane, SearchItem } from '@cybercongress/gravity';
-import { CardStatisics, LinkWindow, Dots, Rank} from '../../../components';
+import Iframe from 'react-iframe';
+import { NoItems, LinkWindow, Dots, Rank } from '../../../components';
 import { formatNumber } from '../../../utils/utils';
 import CodeBlock from '../../ipfs/codeBlock';
-import Iframe from 'react-iframe';
-import Noitem from '../../account/noItem';
 import ContentItem from '../../ipfs/contentItem';
-
 
 const htmlParser = require('react-markdown/plugins/html-parser');
 
 const parseHtml = htmlParser({
-  isValidNode: node => node.type !== 'script',
+  isValidNode: (node) => node.type !== 'script',
 });
 
 function timeSince(timeMS) {
@@ -123,7 +121,7 @@ function MainTab({ loadingTwit, mobile, tweets, nodeIpfs }) {
           {Object.keys(tweets).length > 0 ? (
             searchItems
           ) : (
-            <Noitem text="No feeds" />
+            <NoItems text="No feeds" />
           )}
         </div>
       </Pane>

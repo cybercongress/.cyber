@@ -477,8 +477,8 @@
 .hover-rank-contentItem {
   opacity: 0;
 }
- 
-.hover-rank:hover .hover-rank-contentItem{
+
+.hover-rank:hover .hover-rank-contentItem {
   opacity: 1;
 }
 
@@ -536,7 +536,7 @@
   opacity: 0;
 }
 
-.cosmos-address:hover .img-method-addedAddress{
+.cosmos-address:hover .img-method-addedAddress {
   opacity: 1;
 }
 
@@ -587,13 +587,13 @@
 }
 
 .container-buttonIcon.active-icon::after {
-    content: '';
-    height: 1px;
-    width: 20px;
-    position: absolute;
-    top: 100%;
-    background-color: #36d6ae;
-    box-shadow: 0px 0px 3px 1px #36d6ae;
+  content: '';
+  height: 1px;
+  width: 20px;
+  position: absolute;
+  top: 100%;
+  background-color: #36d6ae;
+  box-shadow: 0px 0px 3px 1px #36d6ae;
 }
 
 .container-buttonIcon:hover img {
@@ -634,4 +634,51 @@
   padding: 20px;
   padding-bottom: 20px;
   font-size: 16px;
+}
+
+.svg_wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg_wrap svg {
+  width: 200px;
+  border-radius: 50%;
+  transform: rotate(-90deg);
+}
+
+.svg_wrap svg circle {
+  fill: none;
+  r: 20px;
+  cx: 20px;
+  cy: 20px;
+  stroke-width: 5;
+}
+
+.svg_wrap svg circle.svg_background {
+  stroke: #97979775;
+}
+
+.svg_wrap svg circle.svg_calc {
+  stroke: #3ab793;
+}
+
+.svg_wrap .svg_value {
+  position: absolute;
+  font-weight: 500;
+}
+
+.svg_wrap .svg_value:after {
+  content: '%';
+}
+
+.disabled-Btn-Mint {
+  cursor: default !important;
+  opacity: 0.8 !important;
+  background-image: none !important;
+  background-color: #31363abf !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ffffff !important;
 }

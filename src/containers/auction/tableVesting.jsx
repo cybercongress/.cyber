@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 
 import { trimString, formatCurrency, formatNumber } from '../../utils/utils';
 import { AUCTION, CYBER } from '../../utils/config';
-import { Account } from '../../components';
-import Noitem from '../account/noItem';
+import { Account, NoItems } from '../../components';
+
 const DEFAULT_PROOF = 'Processing';
 
 const TextTable = ({ children, fontSize, color, display, ...props }) => (
@@ -20,7 +20,7 @@ const TextTable = ({ children, fontSize, color, display, ...props }) => (
 );
 
 const TableVesting = ({ data }) => {
-  const tableRow = data.map(item => (
+  const tableRow = data.map((item) => (
     <Table.Row borderBottom="none" key={item.id} isSelectable>
       <Table.TextCell flex="none" textAlign="end" width="70px">
         <TextTable>{item.id}</TextTable>
@@ -52,7 +52,7 @@ const TableVesting = ({ data }) => {
           {item.proof.indexOf(DEFAULT_PROOF) !== -1 ? (
             DEFAULT_PROOF.toUpperCase()
           ) : (
-            <Link to={`/network/euler/tx/${item.proof.toUpperCase()}`}>
+            <Link to={`/network/bostrom/tx/${item.proof.toUpperCase()}`}>
               {trimString(item.proof.toUpperCase(), 6, 6)}
             </Link>
           )}
@@ -95,7 +95,7 @@ const TableVesting = ({ data }) => {
           padding: 7,
         }}
       >
-        {data.length > 0 ? tableRow : <Noitem text="No Vesting" />}
+        {data.length > 0 ? tableRow : <NoItems text="No Vesting" />}
       </Table.Body>
     </Table>
   );

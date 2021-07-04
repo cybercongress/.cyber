@@ -12,16 +12,8 @@ function BandwidthParam({ data }) {
         gridGap="20px"
       >
         <CardStatisics
-          title="tx cost"
-          value={formatNumber(parseFloat(data.tx_cost))}
-        />
-        <CardStatisics
-          title="link msg cost"
-          value={formatNumber(parseFloat(data.link_msg_cost))}
-        />
-        <CardStatisics
-          title="non link msg cost"
-          value={formatNumber(parseFloat(data.non_link_msg_cost))}
+          title="base price"
+          value={formatNumber(parseFloat(data.base_price))}
         />
         <CardStatisics
           title="recovery period blocks"
@@ -30,14 +22,6 @@ function BandwidthParam({ data }) {
         <CardStatisics
           title="adjust price period blocks"
           value={formatNumber(parseFloat(data.adjust_price_period))}
-        />
-        <CardStatisics
-          title="base credit price"
-          value={formatNumber(Math.floor(data.base_credit_price))}
-        />
-        <CardStatisics
-          title="desirable bandwidth"
-          value={formatNumber(parseFloat(data.desirable_bandwidth))}
         />
         <CardStatisics
           title="max block bandwidth"

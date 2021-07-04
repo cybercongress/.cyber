@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Pane } from '@cybercongress/gravity';
-import { Rank } from '../../../components';
+import { Rank, NoItems } from '../../../components';
 import { exponentialToDecimal } from '../../../utils/utils';
 import ContentItem from '../../ipfs/contentItem';
 
@@ -55,7 +55,7 @@ function AppsTab({ data, node, mobile }) {
         flexDirection="column"
       >
         <div className="container-contentItem" style={{ width: '100%' }}>
-          {apps}
+          {Object.keys(data).length > 0 ? apps : <NoItems text="No apps" />}
         </div>
       </Pane>
     );

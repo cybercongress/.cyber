@@ -39,35 +39,37 @@ const ForceGraph = ({ match }) => {
       }
       var GET_CYBERLINKS = `
       query Cyberlinks {
-        cyberlink(limit: ${String(limit)}, order_by: {height: desc}, where: ${where}) {
+        cyberlinks(limit: ${String(
+          limit
+        )}, order_by: {height: desc}, where: ${where}) {
           object_from
           object_to
           subject
-          txhash
+          transaction_hash
         }
       }
       `;
-      const { cyberlink } = await getGraphQLQuery(GET_CYBERLINKS);
-      const from = cyberlink.map((a) => a.object_from);
-      const to = cyberlink.map((a) => a.object_to);
+      const { cyberlinks } = await getGraphQLQuery(GET_CYBERLINKS);
+      const from = cyberlinks.map((a) => a.object_from);
+      const to = cyberlinks.map((a) => a.object_to);
       const set = new Set(from.concat(to));
       const object = [];
       set.forEach(function (value) {
         object.push({ id: value });
       });
 
-      for (let i = 0; i < cyberlink.length; i++) {
-        cyberlink[i] = {
-          source: cyberlink[i].object_from,
-          target: cyberlink[i].object_to,
-          name: cyberlink[i].txhash,
-          subject: cyberlink[i].subject,
+      for (let i = 0; i < cyberlinks.length; i++) {
+        cyberlinks[i] = {
+          source: cyberlinks[i].object_from,
+          target: cyberlinks[i].object_to,
+          name: cyberlinks[i].transaction_hash,
+          subject: cyberlinks[i].subject,
           // curvative: getRandomInt(20, 500) / 1000,
         };
       }
       graph = {
         nodes: object,
-        links: cyberlink,
+        links: cyberlinks,
       };
       setItems(graph);
       setLoading(false);
@@ -113,7 +115,7 @@ const ForceGraph = ({ match }) => {
 
   const handleLinkRightClick = useCallback(
     (link) => {
-      window.open(`https://cyber.page/network/euler/tx/${link.name}`, '_blank');
+      window.open(`https://cyber.page/network/bostrom/tx/${link.name}`, '_blank');
     },
     [fgRef]
   );

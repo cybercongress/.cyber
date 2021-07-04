@@ -2,19 +2,24 @@ import { useEffect, useState } from 'react';
 import Web3Utils from 'web3-utils';
 import { getBalance, getTotalEUL } from '../../../utils/search/utils';
 import { COSMOS, INFINITY } from '../../../utils/config';
+import { useGetBalance } from '../../account/hooks';
 
 export const useAddressInfo = (accounts, updateCard) => {
   const [loadingInfo, setLoadingInfo] = useState(true);
   const [totalCyber, setTotalCyber] = useState(0);
   const [totalCosmos, setTotalCosmos] = useState(0);
+  const [address, setAddress] = useState(null);
+  const { balance } = useGetBalance(address, updateCard);
+
+  useEffect(() => {
+    setTotalCyber(balance);
+  }, [balance]);
 
   useEffect(() => {
     const feachData = async () => {
       setLoadingInfo(true);
       if (accounts.cyber) {
-        const responseCyber = await getBalance(accounts.cyber.bech32);
-        const responseTotalCyber = await getTotalEUL(responseCyber);
-        setTotalCyber(responseTotalCyber);
+        setAddress(accounts.cyber.bech32);
       }
       if (accounts.cosmos) {
         const responseCosmos = await getBalance(

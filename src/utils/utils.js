@@ -327,6 +327,10 @@ const isMobileTablet = () => {
   return hasTouchScreen;
 };
 
+const coinDecimals = (number) => {
+  return number * 10 ** -18;
+};
+
 export {
   run,
   sort,
@@ -343,4 +347,5 @@ export {
   downloadObjectAsJson,
   getTimeRemaining,
   isMobileTablet,
+  coinDecimals,
 };

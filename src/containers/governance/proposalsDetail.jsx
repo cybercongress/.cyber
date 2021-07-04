@@ -342,7 +342,7 @@ class ProposalsDetail extends React.Component {
                 title="Proposer"
                 value={
                   <Link
-                    to={`/network/euler/contract/${proposalsInfo.proposer}`}
+                    to={`/network/bostrom/contract/${proposalsInfo.proposer}`}
                   >
                     {proposalsInfo.proposer}
                   </Link>
@@ -359,7 +359,7 @@ class ProposalsDetail extends React.Component {
                   marginBottom={15}
                   value={
                     <Link
-                      to={`/network/euler/contract/${proposalsInfo.recipient}`}
+                      to={`/network/bostrom/contract/${proposalsInfo.recipient}`}
                     >
                       {proposalsInfo.recipient}
                     </Link>

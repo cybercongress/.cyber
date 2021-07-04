@@ -1,10 +1,10 @@
 import React from 'react';
 import gql from 'graphql-tag';
 import { useSubscription } from '@apollo/react-hooks';
-import TableTxs from '../account/tableTxs';
+import TableTxs from '../account/component/tableTxs';
 import { Loading } from '../../components';
 
-const typeTx = `["cosmos-sdk/MsgDeposit", "cosmos-sdk/MsgVote", "cosmos-sdk/MsgSubmitProposal" ]`;
+const typeTx = `["cosmos.staking.v1beta1.MsgDeposit", "cosmos.staking.v1beta1.MsgVote", "cosmos.staking.v1beta1.MsgSubmitProposal" ]`;
 
 function Leadership({ accountUser }) {
   const GET_CHARACTERS = gql`
@@ -13,7 +13,7 @@ function Leadership({ accountUser }) {
         order_by: { height: desc }
         where: {
           _and: [
-            { messagesByTxhash: { type: { _in: ${typeTx} } } }
+            { messagesByTransactionHash: { type: { _in: ${typeTx} } } }
             { subject: { _eq: "${accountUser}" } }
           ]
         }

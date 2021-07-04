@@ -51,7 +51,7 @@ function TableEvangelists({ data, blessed }) {
                 <TextTable>
                   <Link
                     style={{ marginRight: '5px' }}
-                    to={`/network/euler/contract/${data[key].cyberAddress}`}
+                    to={`/network/bostrom/contract/${data[key].cyberAddress}`}
                   >
                     {data[key].nickname}
                   </Link>
@@ -144,7 +144,7 @@ function TableEvangelists({ data, blessed }) {
                 <TextTable>
                   <Link
                     style={{ marginRight: '5px' }}
-                    to={`/network/euler/contract/${data[key].cyberAddress}`}
+                    to={`/network/bostrom/contract/${data[key].cyberAddress}`}
                   >
                     {data[key].nickname}
                   </Link>

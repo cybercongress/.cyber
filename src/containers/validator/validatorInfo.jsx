@@ -82,7 +82,7 @@ const ValidatorInfo = ({ data }) => {
         <Pane display="flex" alignItems="center">
           <StatusTooltip status={data.status} size={10} />
           <Pane marginLeft={10} fontSize="25px">
-            {website.length > 0 ? <a href={website}>{moniker}</a> : moniker}
+            {website !== undefined ? <a href={website}>{moniker}</a> : moniker}
           </Pane>
         </Pane>
       </Pane>

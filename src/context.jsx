@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SigningCosmosClient, GasPrice } from '@cosmjs/launchpad';
+import { SigningCyberClient, CyberClient } from 'js-cyber';
 import { Decimal } from '@cosmjs/math';
+import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
+
 import { CYBER } from './utils/config';
 
 const valueContext = {
   keplr: null,
   ws: null,
+  jsCyber: null,
+  updatejsCyber: () => {},
 };
 
 export const AppContext = React.createContext(valueContext);
@@ -22,8 +27,8 @@ const configKeplr = () => {
     rpc: CYBER.CYBER_NODE_URL_API,
     rest: CYBER.CYBER_NODE_URL_LCD,
     stakeCurrency: {
-      coinDenom: 'EUL',
-      coinMinimalDenom: 'eul',
+      coinDenom: 'BOOT',
+      coinMinimalDenom: 'boot',
       coinDecimals: 0,
     },
     bip44: {
@@ -32,19 +37,19 @@ const configKeplr = () => {
       coinType: 118,
     },
     bech32Config: {
-      bech32PrefixAccAddr: 'cyber',
-      bech32PrefixAccPub: 'cyberpub',
-      bech32PrefixValAddr: 'cybervaloper',
-      bech32PrefixValPub: 'cybervaloperpub',
-      bech32PrefixConsAddr: 'cybervalcons',
-      bech32PrefixConsPub: 'cybervalconspub',
+      bech32PrefixAccAddr: CYBER.BECH32_PREFIX_ACC_ADDR_CYBER,
+      bech32PrefixAccPub: `${CYBER.BECH32_PREFIX_ACC_ADDR_CYBER}pub`,
+      bech32PrefixValAddr: CYBER.BECH32_PREFIX_ACC_ADDR_CYBERVALOPER,
+      bech32PrefixValPub: `${CYBER.BECH32_PREFIX_ACC_ADDR_CYBERVALOPER}pub`,
+      bech32PrefixConsAddr: `${CYBER.BECH32_PREFIX_ACC_ADDR_CYBER}valcons`,
+      bech32PrefixConsPub: `${CYBER.BECH32_PREFIX_ACC_ADDR_CYBER}valconspub`,
     },
     currencies: [
       {
         // Coin denomination to be displayed to the user.
-        coinDenom: 'EUL',
+        coinDenom: 'BOOT',
         // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-        coinMinimalDenom: 'eul',
+        coinMinimalDenom: 'boot',
         // # of decimal points to convert minimal denomination to user-facing denomination.
         coinDecimals: 0,
       },
@@ -53,9 +58,9 @@ const configKeplr = () => {
     feeCurrencies: [
       {
         // Coin denomination to be displayed to the user.
-        coinDenom: 'EUL',
+        coinDenom: 'BOOT',
         // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-        coinMinimalDenom: 'eul',
+        coinMinimalDenom: 'boot',
         // # of decimal points to convert minimal denomination to user-facing denomination.
         coinDecimals: 0,
       },
@@ -72,19 +77,25 @@ const configKeplr = () => {
 export async function createClient(signer) {
   if (signer) {
     const firstAddress = (await signer.getAccounts())[0].address;
-    const gasPrice = new GasPrice(Decimal.fromAtomics(0, 0), 'uatom');
-    const gasLimits = { send: 100000 };
+    const gasPrice = new GasPrice(Decimal.fromAtomics(0, 0), 'boot');
+    const gasLimits = { send: 200000 };
 
-    const cosmJS = new SigningCosmosClient(
-      CYBER.CYBER_NODE_URL_LCD,
-      firstAddress,
-      signer,
-      gasPrice,
-      gasLimits,
-      'sync'
+    const client = await SigningCyberClient.connectWithSigner(
+      CYBER.CYBER_NODE_URL_API,
+      signer
     );
 
-    return cosmJS;
+    // client.firstAddress = firstAddress;
+    // const cosmJS = new SigningCyberClient(
+    //   CYBER.CYBER_NODE_URL_LCD,
+    //   firstAddress,
+    //   signer,
+    //   gasPrice,
+    //   gasLimits,
+    //   'sync'
+    // );
+
+    return client;
   }
   return null;
 }
@@ -93,6 +104,33 @@ const AppContextProvider = ({ children }) => {
   const [value, setValue] = useState(valueContext);
   const [signer, setSigner] = useState(null);
   const [client, setClient] = useState(null);
+
+  const updatejsCyber = (rpc) => {
+    const createQueryCliet = async () => {
+      const tendermintClient = await Tendermint34Client.connect(rpc);
+      const queryClient = new CyberClient(tendermintClient);
+
+      setValue((item) => ({
+        ...item,
+        jsCyber: queryClient,
+      }));
+    };
+    createQueryCliet();
+  };
+
+  useEffect(() => {
+    const createQueryCliet = async () => {
+      const tendermintClient = await Tendermint34Client.connect(
+        CYBER.CYBER_NODE_URL_API
+      );
+      const queryClient = new CyberClient(tendermintClient);
+      setValue((item) => ({
+        ...item,
+        jsCyber: queryClient,
+      }));
+    };
+    createQueryCliet();
+  }, []);
 
   useEffect(() => {
     if (signer !== null) {
@@ -118,17 +156,31 @@ const AppContextProvider = ({ children }) => {
         init();
       }
     }
+    console.log('window.getOfflineSigner', window.getOfflineSigner);
+    console.log('window.keplr', window.keplr);
   }, [window.keplr, window.getOfflineSigner]);
 
   useEffect(() => {
     if (client !== null) {
-      setValue((item) => ({ ...item, keplr: client }));
+      setValue((item) => ({
+        ...item,
+        keplr: client,
+        ws: CYBER.CYBER_WEBSOCKET_URL,
+      }));
     }
   }, [client]);
 
   console.log('value', value);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  if (value.jsCyber && value.jsCyber === null) {
+    return <div>...</div>;
+  }
+
+  return (
+    <AppContext.Provider value={{ ...value, updatejsCyber }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export default AppContextProvider;

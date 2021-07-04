@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import TableTxs from '../account/tableTxs';
 import { Loading, Dots } from '../../components';
 import { formatNumber } from '../../utils/utils';
 
 const GET_CHARACTERS = gql`
-  query tx {
+  query MyQuery {
     transaction_aggregate {
       aggregate {
-        count(columns: code)
+        count(columns: hash)
       }
     }
   }

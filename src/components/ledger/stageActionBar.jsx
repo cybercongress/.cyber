@@ -172,7 +172,7 @@ export const Confirmed = ({ txHash, txHeight, cosmos, onClickBtnCloce }) => (
           {trimString(txHash, 6, 6)}
         </LinkWindow>
       ) : (
-        <Link to={`/network/euler/tx/${txHash}`}>
+        <Link to={`/network/bostrom/tx/${txHash}`}>
           {trimString(txHash, 6, 6)}
         </Link>
       )}{' '}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import {
   Pane,
@@ -15,7 +15,6 @@ import { useQuery, useSubscription } from '@apollo/react-hooks';
 import { ObjectInspector, chromeDark } from '@tableflip/react-inspector';
 import gql from 'graphql-tag';
 import {
-  search,
   getRankGrade,
   getToLink,
   getCreator,
@@ -23,7 +22,6 @@ import {
 } from '../../utils/search/utils';
 import { Dots, TabBtn, Loading, TextTable, Cid } from '../../components';
 import CodeBlock from './codeBlock';
-import Noitem from '../account/noItem';
 import { formatNumber, trimString, formatCurrency } from '../../utils/utils';
 import { PATTERN_HTTP } from '../../utils/config';
 import {
@@ -35,9 +33,10 @@ import {
   MetaTab,
 } from './tab';
 import ActionBarContainer from '../Search/ActionBarContainer';
-import AvatarIpfs from '../account/avatarIpfs';
+import AvatarIpfs from '../account/component/avatarIpfs';
 import ContentItem from './contentItem';
 import useGetIpfsContent from './useGetIpfsContentHook';
+import { AppContext } from '../../context';
 
 const dateFormat = require('dateformat');
 
@@ -62,7 +61,18 @@ const Pill = ({ children, active, ...props }) => (
   </Pane>
 );
 
+const search = async (client, hash) => {
+  try {
+    const responseSearchResults = await client.search(hash);
+    console.log(`responseSearchResults`, responseSearchResults);
+    return responseSearchResults.result ? responseSearchResults.result : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 function Ipfs({ nodeIpfs, mobile }) {
+  const { jsCyber } = useContext(AppContext);
   const { cid } = useParams();
   const location = useLocation();
   const dataGetIpfsContent = useGetIpfsContent(cid, nodeIpfs, 10);
@@ -101,9 +111,10 @@ function Ipfs({ nodeIpfs, mobile }) {
   }, [dataGetIpfsContent]);
 
   useEffect(() => {
-    // setLoading(true);
-    getLinks();
-  }, [cid]);
+    if (jsCyber !== null) {
+      getLinks();
+    }
+  }, [cid, jsCyber]);
 
   const getLinks = () => {
     feacDataSearch();
@@ -112,12 +123,13 @@ function Ipfs({ nodeIpfs, mobile }) {
   };
 
   const feacDataSearch = async () => {
-    const responseSearch = await search(cid);
+    const responseSearch = await search(jsCyber, cid);
     setDataAnswers(responseSearch);
   };
 
   const feachCidTo = async () => {
     const response = await getToLink(cid);
+    console.log(`response`, response)
     if (response !== null && response.txs && response.txs.length > 0) {
       console.log('response To :>> ', response);
       setDataToLink(response.txs.reverse());
@@ -252,7 +264,7 @@ function Ipfs({ nodeIpfs, mobile }) {
           display="flex"
           flexDirection="column"
         >
-          <Link to={`/network/euler/contract/${creator.address}`}>
+          <Link to={`/network/bostrom/contract/${creator.address}`}>
             <Pane
               alignItems="center"
               marginX="auto"

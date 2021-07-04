@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pane } from '@cybercongress/gravity';
 import { ObjectInspector, chromeDark } from '@tableflip/react-inspector';
-import Noitem from '../../account/noItem';
 import { formatCurrency } from '../../../utils/utils';
 
 const objectInspectorTheme = {
@@ -71,7 +70,7 @@ function MetaTab({ data, cid }) {
       </>
     );
   } catch (error) {
-    return <Noitem text="oops..." />;
+    return <NoItems text="oops..." />;
   }
 }
 

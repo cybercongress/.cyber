@@ -16,7 +16,7 @@ import { getAccountBandwidth } from '../../utils/search/utils';
 import { setBandwidth } from '../../redux/actions/bandwidth';
 import { setDefaultAccount, setAccounts } from '../../redux/actions/pocket';
 import { setQuery } from '../../redux/actions/query';
-import { WP } from '../../utils/config';
+import { CYBER, WP } from '../../utils/config';
 import { formatNumber } from '../../utils/utils';
 
 const cyber = require('../../image/blue-circle.png');
@@ -194,9 +194,11 @@ class App extends React.PureComponent {
     const { setBandwidthProps } = this.props;
     if (address !== null) {
       const dataAccountBandwidth = await getAccountBandwidth(address);
-
       if (dataAccountBandwidth !== null) {
-        const { remained, max_value: maxValue } = dataAccountBandwidth;
+        const {
+          remained_value: remained,
+          max_value: maxValue,
+        } = dataAccountBandwidth.account_bandwidth;
         setBandwidthProps(remained, maxValue);
       }
     }
@@ -315,40 +317,7 @@ class App extends React.PureComponent {
           className="container-distribution"
         >
           <Pane position="relative">
-            <MenuButton
-              to="/brain"
-              textTooltip={
-                <span>
-                  You are on the{' '}
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://github.com/cybercongress/cyberd/releases"
-                  >
-                    euler-6
-                  </a>{' '}
-                  network at block {formatNumber(block)}. euler-6 is
-                  incentivized test network. Be careful. Details in{' '}
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://ipfs.io/ipfs/QmQ1Vong13MDNxixDyUdjniqqEj8sjuNEBYMyhQU4gQgq3"
-                  >
-                    whitepaper
-                  </a>{' '}
-                  and{' '}
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://cybercongress.ai/game-of-links/"
-                  >
-                    Game of links
-                  </a>{' '}
-                  rules.
-                </span>
-              }
-              imgLogo={cyber}
-            />
+            <MenuButton to="/brain" imgLogo={cyber} />
             <Pane bottom="-10px" right="-20%" position="absolute">
               <Tooltip
                 placement="bottom"
@@ -360,30 +329,22 @@ class App extends React.PureComponent {
                       rel="noopener noreferrer"
                       href="https://github.com/cybercongress/cyberd/releases"
                     >
-                      euler-6
+                      {CYBER.CHAIN_ID}
                     </a>{' '}
                     network at block{' '}
                     <span style={{ color: '#4ed6ae' }}>
                       {formatNumber(parseFloat(block))}
                     </span>
-                    . euler-6 is incentivized test network. Be careful. Details
-                    in{' '}
+                    . {CYBER.CHAIN_ID} is incentivized test network. Be careful.
+                    Details in{' '}
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
                       href="https://ipfs.io/ipfs/QmQ1Vong13MDNxixDyUdjniqqEj8sjuNEBYMyhQU4gQgq3"
                     >
                       whitepaper
-                    </a>{' '}
-                    and{' '}
-                    <a
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href="https://cybercongress.ai/game-of-links/"
-                    >
-                      Game of links
-                    </a>{' '}
-                    rules.
+                    </a>
+                    .
                   </span>
                 }
               >

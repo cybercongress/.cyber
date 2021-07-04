@@ -23,7 +23,7 @@ const ProposalsIdDetailTableVoters = ({ votes, data, ...props }) => {
       <Table.TextCell>
         <Text color="#fff">
           <Account address={item.voter} />
-          {/* <Link to={`/network/euler/contract/${item.voter}`}>{item.voter}</Link> */}
+          {/* <Link to={`/network/bostrom/contract/${item.voter}`}>{item.voter}</Link> */}
         </Text>
       </Table.TextCell>
       <Table.TextCell>

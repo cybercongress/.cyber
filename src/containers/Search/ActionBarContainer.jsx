@@ -273,56 +273,44 @@ class ActionBarContainer extends Component {
   };
 
   generateTx = async () => {
-    const { keplr } = this.context;
-    const { fromCid, toCid, addressLocalStor } = this.state;
+    try {
+      const { keplr } = this.context;
+      const { fromCid, toCid, addressLocalStor } = this.state;
 
-    this.setState({
-      stage: STAGE_KEPLR_APPROVE,
-    });
-    if (keplr !== null) {
-      const chainId = CYBER.CHAIN_ID;
-      await window.keplr.enable(chainId);
-      const { address } = await keplr.getAccount();
-      console.log('address', address)
-      if (addressLocalStor !== null && addressLocalStor.address === address) {
-        const msgs = [];
-        msgs.push({
-          type: 'cyber/Link',
-          value: {
-            address,
-            links: [
-              {
-                from: fromCid,
-                to: toCid,
-              },
-            ],
-          },
-        });
-        const fee = {
-          amount: coins(0, 'uatom'),
-          gas: '100000',
-        };
-        console.log('msg', msgs);
-        const result = await keplr.signAndBroadcast(
-          msgs,
-          fee,
-          CYBER.MEMO_KEPLR
-        );
-        console.log('result: ', result);
-        const hash = result.transactionHash;
-        console.log('hash :>> ', hash);
-        this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
-        this.timeOut = setTimeout(this.confirmTx, 1500);
-      } else {
-        this.setState({
-          stage: STAGE_ERROR,
-          errorMessage: `Add address ${trimString(
-            address,
-            9,
-            5
-          )} to your pocket or make active `,
-        });
+      this.setState({
+        stage: STAGE_KEPLR_APPROVE,
+      });
+      if (keplr !== null) {
+        const chainId = CYBER.CHAIN_ID;
+        await window.keplr.enable(chainId);
+        const { address } = (await keplr.signer.getAccounts())[0];
+
+        console.log('address', address);
+        if (addressLocalStor !== null && addressLocalStor.address === address) {
+          const result = await keplr.cyberlink(address, fromCid, toCid);
+          console.log('result: ', result);
+          const hash = result.transactionHash;
+          console.log('hash :>> ', hash);
+          this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+          this.timeOut = setTimeout(this.confirmTx, 1500);
+        } else {
+          this.setState({
+            stage: STAGE_ERROR,
+            errorMessage: `Add address ${trimString(
+              address,
+              9,
+              5
+            )} to your pocket or make active `,
+          });
+        }
       }
+    } catch (e) {
+      console.log(`e`, e);
+      this.setState({
+        stage: STAGE_ERROR,
+        txBody: null,
+        errorMessage: e.toString(),
+      });
     }
   };
 
@@ -412,7 +400,7 @@ class ActionBarContainer extends Component {
       if (data.logs) {
         this.setState({
           stage: STAGE_CONFIRMED,
-          txHeight: data.height,
+          txHeight: data.txhash,
         });
         if (update) {
           update();
@@ -422,7 +410,7 @@ class ActionBarContainer extends Component {
       if (data.code) {
         this.setState({
           stage: STAGE_ERROR,
-          txHeight: data.height,
+          txHeight: data.txhash,
           errorMessage: data.raw_log,
         });
         return;

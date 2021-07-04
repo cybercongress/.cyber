@@ -206,9 +206,8 @@ class ActionBarContainer extends Component {
     const amount = parseFloat(toSend) * DIVISOR_CYBER_G;
 
     if (keplr !== null) {
-      await window.keplr.enable(CYBER.CHAIN_ID);
-      const { address } = await keplr.getAccount();
-
+      const [{ address }] = await keplr.signer.getAccounts();
+      let response = null;
       const msg = [];
       if (type === 'heroes') {
         if (address === addressSend) {
@@ -232,33 +231,11 @@ class ActionBarContainer extends Component {
       } else if (type === 'tweets' && follow) {
         const fromCid = await getPin(node, 'follow');
         const toCid = await getPin(node, addressSend);
-        msg.push({
-          type: 'cyber/Link',
-          value: {
-            address,
-            links: [
-              {
-                from: fromCid,
-                to: toCid,
-              },
-            ],
-          },
-        });
+        response = await keplr.cyberlink(address, fromCid, toCid);
       } else if (type === 'tweets' && tweets) {
         const fromCid = await getPin(node, 'tweet');
         const toCid = await this.calculationIpfsTo(contentHash);
-        msg.push({
-          type: 'cyber/Link',
-          value: {
-            address,
-            links: [
-              {
-                from: fromCid,
-                to: toCid,
-              },
-            ],
-          },
-        });
+        response = await keplr.cyberlink(address, fromCid, toCid);
       } else {
         msg.push({
           type: 'cosmos-sdk/MsgSend',
@@ -269,15 +246,10 @@ class ActionBarContainer extends Component {
           },
         });
       }
-      console.log(`msg`, msg)
-      if (msg.length > 0) {
-        const fee = {
-          amount: coins(0, 'uatom'),
-          gas: '100000',
-        };
-        const result = await keplr.signAndBroadcast(msg, fee, CYBER.MEMO_KEPLR);
-        console.log('result: ', result);
-        const hash = result.transactionHash;
+
+      if (response !== null) {
+        console.log('response: ', response);
+        const hash = response.transactionHash;
         console.log('hash :>> ', hash);
         this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
         this.timeOut = setTimeout(this.confirmTx, 1500);
@@ -569,7 +541,7 @@ class ActionBarContainer extends Component {
     //   );
     // }
 
-    console.log('rewards', groupLink(totalRewards.rewards));
+    // console.log('rewards', groupLink(totalRewards.rewards));
 
     if (stage === STAGE_INIT && type === 'tweets' && follow) {
       return (
@@ -602,25 +574,25 @@ class ActionBarContainer extends Component {
     }
     // console.log('rewards', rewards);
 
-    if (
-      stage === STAGE_INIT &&
-      type === 'heroes' &&
-      defaultAccount !== null &&
-      defaultAccount.keys === 'keplr'
-    ) {
-      return (
-        <ActionBar>
-          <Pane>
-            <Button
-              disabled={addressSend !== defaultAccount.bech32}
-              onClick={(e) => this.onClickSend(e)}
-            >
-              Claim rewards
-            </Button>
-          </Pane>
-        </ActionBar>
-      );
-    }
+    // if (
+    //   stage === STAGE_INIT &&
+    //   type === 'heroes' &&
+    //   defaultAccount !== null &&
+    //   defaultAccount.keys === 'keplr'
+    // ) {
+    //   return (
+    //     <ActionBar>
+    //       <Pane>
+    //         <Button
+    //           disabled={addressSend !== defaultAccount.bech32}
+    //           onClick={(e) => this.onClickSend(e)}
+    //         >
+    //           Claim rewards
+    //         </Button>
+    //       </Pane>
+    //     </ActionBar>
+    //   );
+    // }
 
     if (stage === STAGE_LEDGER_INIT) {
       return (

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Pane } from '@cybercongress/gravity';
 import ContentItem from '../contentItem';
-import Noitem from '../../account/noItem';
-import { Rank } from '../../../components';
+import { Rank, NoItems } from '../../../components';
 import { getRankGrade } from '../../../utils/search/utils';
 import { exponentialToDecimal } from '../../../utils/utils';
 
@@ -49,7 +48,7 @@ function AnswersTab({ data, mobile, nodeIpfs }) {
   }
   return (
     <div className="container-contentItem">
-      <Noitem text="no answers" />
+      <NoItems text="no answers" />
     </div>
   );
 }

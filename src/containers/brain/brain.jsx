@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Text, Pane, Tablist, ActionBar } from '@cybercongress/gravity';
 import { connect } from 'react-redux';
 import { Link, Route, useLocation } from 'react-router-dom';
@@ -7,7 +7,6 @@ import {
   getBalance,
   getTotalEUL,
   getIpfsHash,
-  search,
   getRankGrade,
 } from '../../utils/search/utils';
 import { trimString } from '../../utils/utils';
@@ -31,13 +30,25 @@ import {
   useGetCybernomics,
   useGetStatisticsCyber,
 } from './hooks';
+import { AppContext } from '../../context';
 
 import Port from '../port';
 
 import { chekPathname } from './utils/utils';
 
+const search = async (client, hash) => {
+  try {
+    const responseSearchResults = await client.search(hash);
+    console.log(`responseSearchResults`, responseSearchResults);
+    return responseSearchResults.result ? responseSearchResults.result : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 function Brain({ node, mobile, defaultAccount }) {
   const location = useLocation();
+  const { jsCyber } = useContext(AppContext);
   const { cybernomics } = useGetCybernomics();
   const { government, knowledge } = useGetStatisticsCyber();
   const { tweets, loadingTweets } = useGetTweets(defaultAccount, node);
@@ -71,49 +82,53 @@ function Brain({ node, mobile, defaultAccount }) {
 
   useEffect(() => {
     const feachData = async () => {
-      const keywordHash = await getIpfsHash('apps');
-      const responseApps = await search(keywordHash);
-      if (responseApps.length > 0) {
-        const dataApps = responseApps.reduce(
-          (obj, item) => ({
-            ...obj,
-            [item.cid]: {
-              cid: item.cid,
-              rank: item.rank,
-              grade: getRankGrade(item.rank),
-              status: node !== null ? 'understandingState' : 'impossibleLoad',
-              query: 'apps',
-              text: item.cid,
-              content: false,
-            },
-          }),
-          {}
-        );
-        setApps(dataApps);
+      if (jsCyber !== null) {
+        const keywordHash = await getIpfsHash('apps');
+        const responseApps = await search(jsCyber, keywordHash);
+        if (responseApps.length > 0) {
+          const dataApps = responseApps.reduce(
+            (obj, item) => ({
+              ...obj,
+              [item.cid]: {
+                cid: item.cid,
+                rank: item.rank,
+                grade: getRankGrade(item.rank),
+                status: node !== null ? 'understandingState' : 'impossibleLoad',
+                query: 'apps',
+                text: item.cid,
+                content: false,
+              },
+            }),
+            {}
+          );
+          setApps(dataApps);
+        }
       }
     };
     feachData();
-  }, []);
+  }, [jsCyber]);
 
   useEffect(() => {
     const feachData = async () => {
       setLoading(true);
-      if (addressActive !== null) {
+      if (jsCyber !== null && addressActive !== null) {
         const { bech32 } = addressActive;
-        let amountEul = 0;
-        const result = await getBalance(bech32);
-        if (result) {
-          const { total } = getTotalEUL(result);
-          amountEul = total;
-        }
-        setAmount(amountEul);
+        let totalAmount = 0;
+        const responseGetBalanceBoot = await jsCyber.getBalance(bech32, 'boot');
+        totalAmount += parseFloat(responseGetBalanceBoot.amount);
+        const responseGetBalanceSboot = await jsCyber.getBalance(
+          bech32,
+          'sboot'
+        );
+        totalAmount += parseFloat(responseGetBalanceSboot.amount);
+        setAmount(totalAmount);
         setLoading(false);
       } else {
         setLoading(false);
       }
     };
     feachData();
-  }, [addressActive]);
+  }, [addressActive, jsCyber]);
 
   let content;
 

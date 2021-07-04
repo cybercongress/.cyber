@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { TableEv as Table, Pane } from '@cybercongress/gravity';
-import { TextTable, Cid } from '../../../components';
+import { NoItems, Cid } from '../../../components';
 import { trimString } from '../../../utils/utils';
-import Noitem from '../../account/noItem';
-import AvatarIpfs from '../../account/avatarIpfs';
+import AvatarIpfs from '../../account/component/avatarIpfs';
 
 function CommunityTab({ data, node }) {
   if (Object.keys(data).length > 0) {
@@ -28,7 +27,7 @@ function CommunityTab({ data, node }) {
       </Pane>
     );
   }
-  return <Noitem text="No cyberLinks" />;
+  return <NoItems text="No cyberLinks" />;
 }
 
 export default CommunityTab;

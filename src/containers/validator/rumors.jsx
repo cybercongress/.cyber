@@ -1,20 +1,44 @@
 import React from 'react';
 import gql from 'graphql-tag';
 import { useSubscription } from '@apollo/react-hooks';
-import TableTxs from '../account/tableTxs';
+import TableTxs from '../account/component/tableTxs';
 import { Loading } from '../../components';
 
 function Rumors({ accountUser }) {
   const GET_CHARACTERS = gql`
-  subscription MyQuery {
-    transaction(order_by: {height: desc}, where: {_and: [{messagesByTxhash: {type: {_in: ["cosmos-sdk/MsgDelegate", "cosmos-sdk/MsgUndelegate"]}}}, {messagesByTxhash: {value: {_contains: {validator_address: "${accountUser}"}}}}]}) {
-      txhash
-      timestamp
-      messages
-      subject
-      code
+    subscription getRumors {
+      transaction(
+        order_by: { height: desc }
+        where: {
+          _and: [
+            {
+              messagesByTransactionHash: {
+                type: {
+                  _in: [
+                    "cosmos.staking.v1beta1.MsgDelegate"
+                    "cosmos.staking.v1beta1.MsgUndelegate"
+                  ]
+                }
+              }
+            }
+            {
+              messagesByTransactionHash: {
+                value: {
+                  _contains: {
+                    validator_address: "${accountUser}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ) {
+        messages
+        success
+        hash
+        height
+      }
     }
-  }
   `;
   const { loading, error, data: dataTxs } = useSubscription(GET_CHARACTERS);
 

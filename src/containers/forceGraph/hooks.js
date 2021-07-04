@@ -10,10 +10,10 @@ const useGetDataGql = (nodeIpfs) => {
 
   useEffect(() => {
     if (!loadingGql && nodeIpfs !== null) {
-      if (dataGql !== null && dataGql.cyberlink) {
-        const { cyberlink } = dataGql;
+      if (dataGql !== null && dataGql.cyberlinks) {
+        const { cyberlinks } = dataGql;
 
-        cyberlink.forEach(async (item) => {
+        cyberlinks.forEach(async (item) => {
           const response = await getIndexdDb(item.object_to, nodeIpfs);
           if (response && response !== null) {
             setData((itemData) => [
@@ -21,7 +21,7 @@ const useGetDataGql = (nodeIpfs) => {
               {
                 to: response,
                 subject: item.subject,
-                txhash: item.txhash,
+                txhash: item.transaction_hash,
               },
             ]);
           }

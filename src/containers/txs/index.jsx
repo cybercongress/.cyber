@@ -21,31 +21,15 @@ const statusFalseImg = require('../../image/ionicons_svg_ios-close-circle.svg');
 const GET_CHARACTERS = gql`
   subscription Query {
     transaction(offset: 0, limit: 200, order_by: { height: desc }) {
-      height
-      txhash
-      messages
-      subject
-      timestamp
-      code
-    }
-  }
-`;
-
-const query = `
-query MyQuery {
-  block(limit: 50, order_by: {height: desc}, offset: 0) {
-    hash
-    height
-    proposer_address
-    transactions_aggregate {
-      aggregate {
-        count
+      success
+      messagesByTransactionHash {
+        type
+        transaction_hash
       }
+      height
+      hash
     }
-    pre_commits
-    timestamp
   }
-}
 `;
 
 const Txs = () => {
@@ -71,44 +55,48 @@ const Txs = () => {
       display="flex"
       minHeight="48px"
       height="fit-content"
-      key={item.txhash}
+      key={item.hash}
     >
       <Table.TextCell flex={0.5} textAlign="center">
         <TextTable>
           <img
             style={{ width: '20px', height: '20px', marginRight: '5px' }}
-            src={item.code === 0 ? statusTrueImg : statusFalseImg}
+            src={item.success ? statusTrueImg : statusFalseImg}
             alt="statusImg"
           />
         </TextTable>
       </Table.TextCell>
       <Table.TextCell textAlign="center">
         <TextTable>
-          <Link to={`/network/euler/tx/${item.txhash}`}>
-            {trimString(item.txhash, 6, 6)}
+          <Link to={`/network/bostrom/tx/${item.hash}`}>
+            {trimString(item.hash, 6, 6)}
           </Link>
         </TextTable>
       </Table.TextCell>
       <Table.TextCell flex={1.3} textAlign="center">
-        <TextTable>
-          {dateFormat(item.timestamp, 'dd/mm/yyyy, HH:MM:ss')}
-        </TextTable>
+        {/* <TextTable>{dateFormat(item.height, 'dd/mm/yyyy, HH:MM:ss')}</TextTable> */}
+        <TextTable>{formatNumber(item.height)}</TextTable>
       </Table.TextCell>
       <Table.TextCell textAlign="start">
         <TextTable display="flex" alignItems="start" flexDirection="column">
-          {item.messages.length > 4 ? (
+          {item.messagesByTransactionHash.length > 4 ? (
             <Pane display="flex" alignItems="center">
               <MsgType
-                key={item.messages[0].txhash}
-                type={item.messages[0].type}
+                key={item.messagesByTransactionHash[0].transaction_hash}
+                type={item.messagesByTransactionHash[0].type}
               />
               <div style={{ marginLeft: '5px' }}>
-                ({item.messages.length} messages)
+                ({item.messagesByTransactionHash.length} messages)
               </div>
             </Pane>
           ) : (
-            item.messages.map((items, i) => {
-              return <MsgType key={`${item.txhash}_${i}`} type={items.type} />;
+            item.messagesByTransactionHash.map((items, i) => {
+              return (
+                <MsgType
+                  key={`${item.transaction_hash}_${i}`}
+                  type={items.type}
+                />
+              );
             })
           )}
         </TextTable>

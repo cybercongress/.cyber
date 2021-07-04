@@ -67,7 +67,7 @@ const Progress = ({ data }) => {
           <Tooltip placement="top" tooltip="Proof Tx">
             <Link
               style={{ display: 'flex' }}
-              to={`/network/euler/tx/${item.cyber_hash.toUpperCase()}`}
+              to={`/network/bostrom/tx/${item.cyber_hash.toUpperCase()}`}
             >
               <img
                 src={reader}

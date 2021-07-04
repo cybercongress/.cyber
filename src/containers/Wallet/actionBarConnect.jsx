@@ -485,9 +485,8 @@ function ActionBarConnect({
     const chainId = CYBER.CHAIN_ID;
     await window.keplr.enable(chainId);
     let count = 1;
-
-    const { address, pubkey } = await keplr.getAccount();
-    const pk = Buffer.from(pubkey.value).toString('hex');
+    const [{ address, pubkey }] = await keplr.signer.getAccounts();
+    const pk = Buffer.from(pubkey).toString('hex');
 
     const localStorageStory = await localStorage.getItem('pocketAccount');
     const localStoragePocket = await localStorage.getItem('pocket');

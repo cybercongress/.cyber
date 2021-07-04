@@ -136,7 +136,7 @@ const DetailsBalance = ({
 const NumberCurrency = ({
   amount,
   fontSizeDecimal,
-  currencyNetwork = 'EUL',
+  currencyNetwork = CYBER.DENOM_CYBER,
   ...props
 }) => {
   const number = formatNumber(amount / CYBER.DIVISOR_CYBER_G, 3);
@@ -236,7 +236,7 @@ const CYBNetworkInfo = ({
         address={address}
         onClickDeleteAddress={onClickDeleteAddress}
         addressLink={
-          <Link to={`/network/euler/contract/${address.bech32}`}>
+          <Link to={`/network/bostrom/contract/${address.bech32}`}>
             <div>{trimString(address.bech32, 9, 3)}</div>
           </Link>
         }
@@ -314,7 +314,7 @@ const EULnetworkInfo = ({
         address={address}
         onClickDeleteAddress={onClickDeleteAddress}
         addressLink={
-          <Link to={`/network/euler/contract/${address.bech32}`}>
+          <Link to={`/network/bostrom/contract/${address.bech32}`}>
             <div>{trimString(address.bech32, 9, 3)}</div>
           </Link>
         }
@@ -332,7 +332,10 @@ const EULnetworkInfo = ({
               ) : (
                 <div className="details-balance">details</div>
               )}
-              <NumberCurrency amount={totalCyber.total} currencyNetwork="eul" />
+              <NumberCurrency
+                amount={totalCyber.total}
+                currencyNetwork={CYBER.DENOM_CYBER}
+              />
               {/* <Pane>{formatCurrency(totalCyber.total, 'eul')}</Pane> */}
             </RowBalance>
             {openEul && (
@@ -360,7 +363,7 @@ const CyberAddressInfo = ({
 }) => {
   const [openCyber, setOpenCyber] = useState(false);
   const [openEul, setOpenEul] = useState(false);
-  const gol = useGetGol(address.bech32);
+  const { totalGol } = useGetGol(address.bech32);
 
   return (
     <>
@@ -378,7 +381,7 @@ const CyberAddressInfo = ({
         loading={loading}
         loadingGift={loadingGift}
         totalCyber={totalCyber}
-        gol={gol}
+        gol={totalGol}
         gift={gift}
         openCyber={openCyber}
         onClickDeleteAddress={onClickDeleteAddress}

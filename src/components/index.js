@@ -42,6 +42,7 @@ import TabBtn from './tabBtn';
 import ButtonImgText from './Button/buttonImgText';
 import Rank from './Rank/rank';
 import PillNumber from './pill';
+import NoItems from './ui/noItems';
 
 export {
   GovernanceChangeParam,
@@ -86,6 +87,7 @@ export {
   Rank,
   PillNumber,
   ButtonIcon,
+  NoItems,
 };
 
 export { Nums } from './ui/Numbers';

@@ -2,7 +2,7 @@ import React from 'react';
 import gql from 'graphql-tag';
 import { useSubscription, useQuery } from '@apollo/react-hooks';
 import { Pane, Tooltip } from '@cybercongress/gravity';
-import Noitem from '../account/noItem';
+import { NoItems } from '../../components';
 
 function Burden({ accountUser }) {
   const GET_CHARACTERS = gql`
@@ -75,7 +75,7 @@ function Burden({ accountUser }) {
           {blocks}
         </Pane>
       ) : (
-        <Noitem text="No preCommit" />
+        <NoItems text="No preCommit" />
       )}
     </div>
   );

@@ -24,7 +24,7 @@ function GovParam({ data }) {
         />
         <CardStatisics
           title="veto"
-          value={`${parseFloat(data.voting.veto) * 100} %`}
+          value={`${parseFloat(data.voting.veto_threshold) * 100} %`}
         />
         <CardStatisics
           title="min deposit"

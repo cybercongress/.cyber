@@ -26,7 +26,7 @@ function GovernmentTab({
             link
           />
         </Link>
-        <Link to="/network/euler/parameters">
+        <Link to="/network/bostrom/parameters">
           <CardStatisics title="Network parameters" value={30} link />
         </Link>
         {/* <Link

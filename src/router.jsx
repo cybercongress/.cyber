@@ -27,10 +27,6 @@ import Txs from './containers/txs';
 import Block from './containers/blok';
 import ParamNetwork from './containers/parameters';
 import Evangelism from './containers/evangelism';
-import GolDelegation from './containers/gol/pages/delegation';
-import GolLifetime from './containers/gol/pages/lifetime';
-import GolRelevance from './containers/gol/pages/relevance';
-import GolLoad from './containers/gol/pages/load';
 import Got from './containers/got/got';
 import TrollBoxx from './containers/trollBox';
 import useIpfsStart from './ipfsHook';
@@ -38,6 +34,8 @@ import ForceGraph from './containers/forceGraph/forceGraph';
 import ForceQuitter from './containers/forceGraph/forceQuitter';
 import PortPages from './containers/port';
 import TestKeplr from './containers/testKeplre';
+import Mint from './containers/mint';
+import RoutedEnergy from './containers/routes';
 
 export const history = createBrowserHistory({});
 
@@ -80,19 +78,15 @@ function AppRouter({
         <Route path="/pocket" component={Wallet} />
         <Route path="/heroes" component={Validators} />
         <Route path="/episode-1" component={Story} />
-        <Route exact path="/network/euler/tx" component={Txs} />
-        <Route path="/gol/delegation" component={GolDelegation} />
-        <Route path="/gol/lifetime" component={GolLifetime} />
-        <Route path="/gol/relevance" component={GolRelevance} />
-        <Route path="/gol/load" component={GolLoad} />
+        <Route exact path="/network/bostrom/tx" component={Txs} />
         <Route path="/gol" component={GOL} />
-        <Route path="/network/euler/tx/:txHash" component={TxsDetails} />
+        <Route path="/network/bostrom/tx/:txHash" component={TxsDetails} />
         <Route
-          path="/network/euler/contract/:address"
+          path="/network/bostrom/contract/:address"
           component={AccountDetails}
         />
         <Route
-          path="/network/euler/hero/:address"
+          path="/network/bostrom/hero/:address"
           component={ValidatorsDetails}
         />
         <Route path="/quitter" component={ForceQuitter} />
@@ -100,13 +94,18 @@ function AppRouter({
         <Route path="/pgraph/:agent" component={ForceGraph} />
         <Route path="/gol/vesting" component={Vesting} />
         <Route path="/ipfs/:cid" component={Ipfs} />
-        <Route exact path="/network/euler/block" component={Block} />
-        <Route path="/network/euler/block/:idBlock" component={BlockDetails} />
-        <Route path="/network/euler/parameters" component={ParamNetwork} />
+        <Route exact path="/network/bostrom/block" component={Block} />
+        <Route
+          path="/network/bostrom/block/:idBlock"
+          component={BlockDetails}
+        />
+        <Route path="/network/bostrom/parameters" component={ParamNetwork} />
         <Route path="/evangelism" component={Evangelism} />
         <Route path="/degenbox" component={TrollBoxx} />
         <Route path="/port" component={PortPages} />
         <Route path="/test" component={TestKeplr} />
+        <Route path="/mint" component={Mint} />
+        <Route path="/energy" component={RoutedEnergy} />
       </Switch>
     </Router>
   );

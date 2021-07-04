@@ -258,7 +258,10 @@ class Wallet extends React.Component {
     if (defaultAccounts !== null && defaultAccounts.cyber) {
       const response = await getAccountBandwidth(defaultAccounts.cyber.bech32);
       if (response !== null) {
-        const { remained, max_value: maxValue } = response;
+        const {
+          remained_value: remained,
+          max_value: maxValue,
+        } = response.account_bandwidth;
         setBandwidthProps(remained, maxValue);
       }
     }
@@ -489,8 +492,8 @@ class Wallet extends React.Component {
       storageManager,
       hoverCard,
     } = this.state;
-    const { web3, keplr, contractToken, ipfsId } = this.props;
-    // const { keplr } = this.context;
+    const { web3, contractToken, ipfsId } = this.props;
+    const { keplr } = this.context;
     let countLink = 0;
     if (link !== null) {
       countLink = [].concat.apply([], link).length;
@@ -677,9 +680,6 @@ const mapStateToProps = (store) => {
   };
 };
 
-// Wallet.contextType = AppContext;
+Wallet.contextType = AppContext;
 
-export default connect(
-  mapStateToProps,
-  mapDispatchprops
-)(withWeb3(injectKeplr(Wallet)));
+export default connect(mapStateToProps, mapDispatchprops)(withWeb3(Wallet));

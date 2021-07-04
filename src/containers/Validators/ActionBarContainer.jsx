@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { Pane, Text, ActionBar, Button } from '@cybercongress/gravity';
 import LocalizedStrings from 'react-localization';
-import { coins } from '@cosmjs/launchpad';
+import { coins, coin } from '@cosmjs/launchpad';
 import { CosmosDelegateTool } from '../../utils/ledger';
 import {
   JsonTransaction,
@@ -212,69 +212,60 @@ class ActionBarContainer extends Component {
     const { keplr } = this.context;
     const { toSend, txType, valueSelect } = this.state;
     const amount = parseFloat(toSend) * DIVISOR_CYBER_G;
-    const validatorAddres = validators.operator_address;
+    const validatorAddres = validators.operatorAddress;
+    this.setState({
+      stage: LEDGER_GENERATION,
+    });
 
     if (keplr !== null) {
-      const chainId = CYBER.CHAIN_ID;
-      await window.keplr.enable(chainId);
-      const { address } = await keplr.getAccount();
+      const [{ address }] = await keplr.signer.getAccounts();
       if (addressPocket !== null && addressPocket.bech32 === address) {
-        const msgs = [];
+        let response = null;
         if (txType === TXTYPE_DELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgDelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_address: validatorAddres,
-            },
-          });
+          response = await keplr.delegateTokens(
+            address,
+            validatorAddres,
+            coin(parseFloat(amount), 'boot'),
+            CYBER.MEMO_KEPLR
+          );
         }
         if (txType === TXTYPE_UNDELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgUndelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_address: validatorAddres,
-            },
-          });
+          response = await keplr.undelegateTokens(
+            address,
+            validatorAddres,
+            coin(parseFloat(amount), 'boot'),
+            CYBER.MEMO_KEPLR
+          );
         }
         if (txType === TXTYPE_REDELEGATE) {
-          msgs.push({
-            type: 'cosmos-sdk/MsgBeginRedelegate',
-            value: {
-              amount: {
-                amount: amount.toString(),
-                denom: CYBER.DENOM_CYBER,
-              },
-              delegator_address: address,
-              validator_dst_address: valueSelect,
-              validator_src_address: validatorAddres,
-            },
-          });
+          response = await keplr.redelegateTokens(
+            address,
+            validatorAddres,
+            valueSelect,
+            coin(parseFloat(amount), 'boot'),
+            CYBER.MEMO_KEPLR
+          );
+          // msgs.push({
+          //   type: 'cosmos-sdk/MsgBeginRedelegate',
+          //   value: {
+          //     amount: {
+          //       amount: amount.toString(),
+          //       denom: CYBER.DENOM_CYBER,
+          //     },
+          //     delegator_address: address,
+          //     validator_dst_address: valueSelect,
+          //     validator_src_address: validatorAddres,
+          //   },
+          // });
         }
-        const fee = {
-          amount: coins(0, 'uatom'),
-          gas: '100000',
-        };
-        console.log('msg', msgs);
-        const result = await keplr.signAndBroadcast(
-          msgs,
-          fee,
-          CYBER.MEMO_KEPLR
-        );
-        console.log('result: ', result);
-        const hash = result.transactionHash;
-        console.log('hash :>> ', hash);
-        this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
-        this.timeOut = setTimeout(this.confirmTx, 1500);
+
+        console.log('result: ', response);
+        if (response !== null) {
+          const hash = response.transactionHash;
+          console.log('hash :>> ', hash);
+          this.setState({ stage: STAGE_SUBMITTED, txHash: hash });
+          this.timeOut = setTimeout(this.confirmTx, 1500);
+        }
       } else {
         this.setState({
           stage: STAGE_ERROR,

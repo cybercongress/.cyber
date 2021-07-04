@@ -11,6 +11,7 @@ import {
   StakingParam,
   RankParam,
   InlfationParam,
+  ParamEnergy,
 } from './tabs';
 
 const TabBtn = ({ text, isSelected, onSelect, to }) => (
@@ -42,6 +43,7 @@ const initParam = {
   gov: null,
   rank: null,
   inlfation: null,
+  energy: null,
 };
 
 function ParamNetwork({ location }) {
@@ -76,6 +78,11 @@ function ParamNetwork({ location }) {
       pathname.match(/inlfation/gm).length > 0
     ) {
       setSelected('inlfation');
+    } else if (
+      pathname.match(/energy/gm) &&
+      pathname.match(/energy/gm).length > 0
+    ) {
+      setSelected('energy');
     } else {
       setSelected('bandwidth');
     }
@@ -124,7 +131,7 @@ function ParamNetwork({ location }) {
   if (selected === 'slashing') {
     content = (
       <Route
-        path="/network/euler/parameters/slashing"
+        path="/network/bostrom/parameters/slashing"
         render={() => <SlashingParam data={dataParam.slashing} />}
       />
     );
@@ -133,7 +140,7 @@ function ParamNetwork({ location }) {
   if (selected === 'staking') {
     content = (
       <Route
-        path="/network/euler/parameters/staking"
+        path="/network/bostrom/parameters/staking"
         render={() => <StakingParam data={dataParam.staking} />}
       />
     );
@@ -142,7 +149,7 @@ function ParamNetwork({ location }) {
   if (selected === 'distribution') {
     content = (
       <Route
-        path="/network/euler/parameters/distribution"
+        path="/network/bostrom/parameters/distribution"
         render={() => <DistributionParam data={dataParam.distribution} />}
       />
     );
@@ -151,7 +158,7 @@ function ParamNetwork({ location }) {
   if (selected === 'gov') {
     content = (
       <Route
-        path="/network/euler/parameters/gov"
+        path="/network/bostrom/parameters/gov"
         render={() => <GovParam data={dataParam.gov} />}
       />
     );
@@ -160,7 +167,7 @@ function ParamNetwork({ location }) {
   if (selected === 'rank') {
     content = (
       <Route
-        path="/network/euler/parameters/rank"
+        path="/network/bostrom/parameters/rank"
         render={() => <RankParam data={dataParam.rank} />}
       />
     );
@@ -169,8 +176,17 @@ function ParamNetwork({ location }) {
   if (selected === 'inlfation') {
     content = (
       <Route
-        path="/network/euler/parameters/inlfation"
+        path="/network/bostrom/parameters/inlfation"
         render={() => <InlfationParam data={dataParam.inlfation} />}
+      />
+    );
+  }
+
+  if (selected === 'energy') {
+    content = (
+      <Route
+        path="/network/bostrom/parameters/energy"
+        render={() => <ParamEnergy data={dataParam.energy} />}
       />
     );
   }
@@ -190,43 +206,48 @@ function ParamNetwork({ location }) {
       </Pane>
       <Tablist
         display="grid"
-        gridTemplateColumns="repeat(auto-fit, minmax(120px, 0.5fr))"
+        gridTemplateColumns="repeat(auto-fit, minmax(110px, 0.5fr))"
         gridGap="10px"
       >
         <TabBtn
           text="Staking"
           isSelected={selected === 'staking'}
-          to="/network/euler/parameters/staking"
+          to="/network/bostrom/parameters/staking"
         />
         <TabBtn
           text="Slashing"
           isSelected={selected === 'slashing'}
-          to="/network/euler/parameters/slashing"
+          to="/network/bostrom/parameters/slashing"
         />
         <TabBtn
           text="Distribution"
           isSelected={selected === 'distribution'}
-          to="/network/euler/parameters/distribution"
+          to="/network/bostrom/parameters/distribution"
         />
         <TabBtn
           text="Bandwidth"
           isSelected={selected === 'bandwidth'}
-          to="/network/euler/parameters"
+          to="/network/bostrom/parameters"
         />
         <TabBtn
           text="Governance"
           isSelected={selected === 'gov'}
-          to="/network/euler/parameters/gov"
+          to="/network/bostrom/parameters/gov"
         />
         <TabBtn
           text="Rank"
           isSelected={selected === 'rank'}
-          to="/network/euler/parameters/rank"
+          to="/network/bostrom/parameters/rank"
         />
         <TabBtn
           text="Inlfation"
           isSelected={selected === 'inlfation'}
-          to="/network/euler/parameters/inlfation"
+          to="/network/bostrom/parameters/inlfation"
+        />
+        <TabBtn
+          text="Energy"
+          isSelected={selected === 'energy'}
+          to="/network/bostrom/parameters/energy"
         />
       </Tablist>
       <Pane

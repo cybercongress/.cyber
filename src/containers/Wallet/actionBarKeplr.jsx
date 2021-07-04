@@ -55,24 +55,12 @@ function ActionBarKeplr({
     const amount = parseFloat(amountSend);
     if (keplr !== null) {
       setStage(STAGE_SUBMITTED);
-      const chainId = CYBER.CHAIN_ID;
-      await window.keplr.enable(chainId);
-      const { address } = await keplr.getAccount();
-      const msgs = [];
-      msgs.push({
-        type: 'cosmos-sdk/MsgSend',
-        value: {
-          amount: coins(amount, CYBER.DENOM_CYBER),
-          from_address: address,
-          to_address: recipient,
-        },
-      });
-      const fee = {
-        amount: coins(0, 'uatom'),
-        gas: '100000',
-      };
-      console.log('msg', msgs);
-      const result = await keplr.signAndBroadcast(msgs, fee, CYBER.MEMO_KEPLR);
+      const [{ address }] = await keplr.signer.getAccounts();
+      const result = await keplr.sendTokens(
+        address,
+        recipient,
+        coins(amount, CYBER.DENOM_CYBER)
+      );
       console.log('result: ', result);
       const hash = result.transactionHash;
       console.log('hash :>> ', hash);

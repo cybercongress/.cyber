@@ -1,37 +1,14 @@
 import React from 'react';
 import { Pane, Text, TableEv as Table } from '@cybercongress/gravity';
-import { useQuery } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
-import { Dots } from '../../components';
-import {
-  Load,
-  Delegation,
-  LifetimeHooks,
-  Rewards,
-  FVS,
-  Relevance,
-  CommunityPool,
-  Takeoff,
-  Total,
-} from './discipline';
+import { Link } from 'react-router-dom';
+import { LinkWindow } from '../../components';
+import RowTable from './components/row';
+import useGetGol from './getGolHooks';
+import { formatNumber } from '../../utils/utils';
 
-const BLOCK_SUBSCRIPTION = gql`
-  query newBlock {
-    block(limit: 1, order_by: { height: desc }) {
-      height
-    }
-  }
-`;
+const TableDiscipline = ({ address }) => {
+  const { resultGol } = useGetGol(address);
 
-const TableDiscipline = ({
-  won = 0,
-  addressLedger,
-  validatorAddress,
-  consensusAddress,
-  takeoffDonations,
-  estimation,
-  mobile,
-}) => {
   try {
     return (
       <Pane marginTop={15} width="100%">
@@ -50,29 +27,10 @@ const TableDiscipline = ({
               </Text>
             </Table.TextHeaderCell>
             <Table.TextHeaderCell textAlign="center">
-              <Text fontSize="16px" color="#fff">
-                Max CYB reward
+              <Text fontSize="18px" color="#fff">
+                CYB won
               </Text>
             </Table.TextHeaderCell>
-            <Table.TextHeaderCell textAlign="center">
-              <Text fontSize="16px" color="#fff">
-                Current CYB reward
-              </Text>
-            </Table.TextHeaderCell>
-            {!mobile && (
-              <>
-                <Table.TextHeaderCell textAlign="center">
-                  <Text fontSize="18px" color="#fff">
-                    CYB won
-                  </Text>
-                </Table.TextHeaderCell>
-                <Table.TextHeaderCell textAlign="center">
-                  <Text fontSize="18px" color="#fff">
-                    CYB won, %
-                  </Text>
-                </Table.TextHeaderCell>
-              </>
-            )}
           </Table.Head>
           <Table.Body
             style={{
@@ -81,34 +39,39 @@ const TableDiscipline = ({
               padding: 7,
             }}
           >
-            <Takeoff
-              takeoffDonations={takeoffDonations}
-              addressLedger={addressLedger}
-              estimation={estimation}
+            <RowTable
+              text="takeoff"
+              cybWon={formatNumber(Math.floor(resultGol.takeoff))}
             />
-            <Relevance
-              addressLedger={addressLedger}
-              takeoffDonations={takeoffDonations}
+            <RowTable
+              text="relevance"
+              cybWon={formatNumber(Math.floor(resultGol.relevance))}
             />
-            <Load
-              addressLedger={addressLedger}
-              takeoffDonations={takeoffDonations}
+            <RowTable
+              text="load"
+              cybWon={formatNumber(Math.floor(resultGol.load))}
             />
-            <Delegation
-              validatorAddress={validatorAddress}
-              takeoffDonations={takeoffDonations}
+            <RowTable
+              text="delegation"
+              cybWon={formatNumber(Math.floor(resultGol.delegation))}
             />
-            <LifetimeHooks
-              consensusAddress={consensusAddress}
-              takeoffDonations={takeoffDonations}
+            <RowTable
+              text="lifetime"
+              cybWon={formatNumber(Math.floor(resultGol.lifetime))}
             />
-            <Rewards
-              validatorAddress={validatorAddress}
-              takeoffDonations={takeoffDonations}
+            <RowTable
+              text="euler 4 rewards"
+              cybWon={formatNumber(Math.floor(resultGol['euler-4']))}
             />
-            <FVS />
-            <CommunityPool address={addressLedger} />
-            <Total />
+            <RowTable text="full validator set" cybWon={0} />
+            <RowTable
+              text="community pool"
+              cybWon={formatNumber(Math.floor(resultGol.comm_pool))}
+            />
+            <RowTable
+              text="total"
+              cybWon={formatNumber(Math.floor(resultGol.sum))}
+            />
           </Table.Body>
         </Table>
       </Pane>
